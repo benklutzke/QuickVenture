@@ -167,6 +167,9 @@ public class Board extends JPanel {
 			hero.setVY(hero.getVY() - 1000);
 			hero.setGrounded(false);
 		}
+		if(down && !hero.isGrounded()){
+			hero.setAY(hero.getAY() + 100); // Needs to go back to default on landing though.
+		}
 		
 //		for(GameObject go : objects){
 		hero.getNewLocation(delta);
@@ -180,7 +183,7 @@ public class Board extends JPanel {
 			
 //		}
 			//Move objects
-		hero.move();
+		hero.move(); // Still need to figure out why the square jitters
 		repaint();
 	}
 	
