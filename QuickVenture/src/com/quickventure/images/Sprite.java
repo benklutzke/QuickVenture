@@ -31,7 +31,7 @@ public class Sprite {
             spriteSheet = loadSprite("hero_spritesheet");
         }
 
-        return spriteSheet.getSubimage(xGrid * TILE_SIZE_X, yGrid * TILE_SIZE_Y, TILE_SIZE_X, TILE_SIZE_Y);
+        return spriteSheet.getSubimage(xGrid * TILE_SIZE_X, yGrid * TILE_SIZE_Y + (yGrid*3), TILE_SIZE_X, TILE_SIZE_Y);
     }
 
 }

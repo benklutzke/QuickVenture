@@ -8,7 +8,7 @@ public class GameObject {
 
 	private final double TARGET_FPS = 80.0;
 	private final double OPTIMAL_TIME = 1 / TARGET_FPS; // 16.67ms per frame
-	private final double MAX_SPEED = 400;
+	private final double MAX_SPEED = 200;
 	
 	private int id;
 	private double x;		// Current x coordinate

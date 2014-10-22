@@ -45,10 +45,15 @@ public class Board extends JPanel {
 	private boolean up = false;
 	private boolean down = false;
 	private boolean space = false;
-	private int direction = 1;
+	private String direction = "right";
 	
+	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
+	private BufferedImage[] walking_bi = {Sprite.getSprite(0,1), Sprite.getSprite(1,1), Sprite.getSprite(2,1), Sprite.getSprite(3,1), Sprite.getSprite(4,1), Sprite.getSprite(5,1)};
+	
 	private Animation standing = new Animation(standing_bi, 10);
+	private Animation walking = new Animation(walking_bi, 10);
+	
 	private Animation animation = standing;
 	
 	public Board() {
@@ -161,18 +166,20 @@ public class Board extends JPanel {
 
 		//Check for user inputs
 		if(left){
-			direction = -1;
-			if(hero.isGrounded())
+			direction = "left";
+			if(hero.isGrounded()){
 				hero.setVX(hero.getVX() - 30);
-			else
+			}else{
 				hero.setVX(hero.getVX() - 10);
+			}
 		}
 		if(right){
-			direction = 1;
-			if(hero.isGrounded())
+			direction = "right";
+			if(hero.isGrounded()){
 				hero.setVX(hero.getVX() + 30);
-			else
+			}else{
 				hero.setVX(hero.getVX() + 10);
+			}
 		}
 		if(up && hero.isGrounded()){
 			hero.setVY(hero.getVY() - 1000);
@@ -181,6 +188,21 @@ public class Board extends JPanel {
 		if(down && !hero.isGrounded()){
 			hero.setVY(hero.getVY() + 30); // Needs to go back to default on landing though.
 		}
+		
+		if(hero.isGrounded() && (left || right) && animation == standing){
+//			if(animation == standing){
+				animation.stop();
+				animation = walking;
+				animation.reset();
+				animation.start();
+//			}
+		}else if(hero.isGrounded() && !(left || right) && animation == walking){
+			animation.stop();
+			animation = standing;
+			animation.reset();
+			animation.start();
+		}
+		
 		
 //		for(GameObject go : objects){
 		hero.getNewLocation(delta);
@@ -205,7 +227,7 @@ public class Board extends JPanel {
 		Character hero = (Character)objects.get(1);
 		objects.get(0).draw(g);
 		
-		if(direction == 1){
+		if(direction == "right"){
 			g.drawImage(animation.getSprite(), (int)hero.getX(), (int)hero.getY(), hero.getWidth(), hero.getHeight()+11, null);
 		}else{
 			g.drawImage(animation.getSprite(), (int)hero.getX()+hero.getWidth(), (int)hero.getY(), -1*hero.getWidth(), hero.getHeight()+11, null);
@@ -228,7 +250,6 @@ public class Board extends JPanel {
 		objectId++;
 		
 		hero.setAY(2000);
-		hero.setColor(Color.blue);
 	}
 
 	
