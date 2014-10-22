@@ -12,11 +12,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+import com.quickventure.images.Animation;
+import com.quickventure.images.Sprite;
 import com.quickventure.objects.GameObject;
 import com.quickventure.objects.Character;
 
@@ -27,7 +30,7 @@ public class Board extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private final int TARGET_FPS = 60;
+	private final int TARGET_FPS = 80;
 	private final long OPTIMAL_TIME = 1000000000 / TARGET_FPS; // 16.67ms per frame
 	private boolean gameRunning = false;
 	private int lastFpsTime = 0;
@@ -42,6 +45,11 @@ public class Board extends JPanel {
 	private boolean up = false;
 	private boolean down = false;
 	private boolean space = false;
+	private int direction = 1;
+	
+	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
+	private Animation standing = new Animation(standing_bi, 10);
+	private Animation animation = standing;
 	
 	public Board() {
 		KeyListener listener = new KeyListener() {
@@ -114,6 +122,7 @@ public class Board extends JPanel {
 		windowWidth = getWidth();
 		windowHeight = getHeight();
 		initBoard();
+		animation.start();
 		
 		while(gameRunning){
 			long now = System.nanoTime();
@@ -152,12 +161,14 @@ public class Board extends JPanel {
 
 		//Check for user inputs
 		if(left){
+			direction = -1;
 			if(hero.isGrounded())
 				hero.setVX(hero.getVX() - 30);
 			else
 				hero.setVX(hero.getVX() - 10);
 		}
 		if(right){
+			direction = 1;
 			if(hero.isGrounded())
 				hero.setVX(hero.getVX() + 30);
 			else
@@ -168,7 +179,7 @@ public class Board extends JPanel {
 			hero.setGrounded(false);
 		}
 		if(down && !hero.isGrounded()){
-			hero.setAY(hero.getAY() + 100); // Needs to go back to default on landing though.
+			hero.setVY(hero.getVY() + 30); // Needs to go back to default on landing though.
 		}
 		
 //		for(GameObject go : objects){
@@ -183,17 +194,26 @@ public class Board extends JPanel {
 			
 //		}
 			//Move objects
-		hero.move(); // Still need to figure out why the square jitters
+		hero.move();
+		animation.update();
 		repaint();
 	}
 	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		Character hero = (Character)objects.get(1);
+		objects.get(0).draw(g);
 		
-		for(GameObject go : objects){
-			go.draw(g);
+		if(direction == 1){
+			g.drawImage(animation.getSprite(), (int)hero.getX(), (int)hero.getY(), hero.getWidth(), hero.getHeight()+11, null);
+		}else{
+			g.drawImage(animation.getSprite(), (int)hero.getX()+hero.getWidth(), (int)hero.getY(), -1*hero.getWidth(), hero.getHeight()+11, null);
 		}
+			
+//		for(GameObject go : objects){
+//			go.draw(g);
+//		}
 	}
 	
 	private void initBoard() {
@@ -203,11 +223,12 @@ public class Board extends JPanel {
 		objects.add(floor);
 		objectId++;
 		
-		Character hero = new Character(objectId, 50, 50, 50, 50, 40, "Hero");
+		Character hero = new Character(objectId, 50, 50, 83, 80, 40, "Hero");
 		objects.add(hero);
 		objectId++;
 		
 		hero.setAY(2000);
+		hero.setColor(Color.blue);
 	}
 
 	

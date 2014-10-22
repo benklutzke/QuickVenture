@@ -6,8 +6,9 @@ import java.awt.Point;
 
 public class GameObject {
 
-	private final double TARGET_FPS = 60.0;
+	private final double TARGET_FPS = 80.0;
 	private final double OPTIMAL_TIME = 1 / TARGET_FPS; // 16.67ms per frame
+	private final double MAX_SPEED = 400;
 	
 	private int id;
 	private double x;		// Current x coordinate
@@ -22,6 +23,7 @@ public class GameObject {
 	private double ax;		// Acceleration x component
 	private double ay;		// Acceleration y component
 	private boolean grounded;
+	private Color color;
 //	private boolean yPGround;
 //	private boolean yNGround;
 //	private boolean xPGround;
@@ -40,6 +42,7 @@ public class GameObject {
 		this.vy = 0;
 		this.ax = 0;
 		this.ay = 0;
+		this.color = Color.red;
 	}
 	
 	public void setX(double x){
@@ -68,6 +71,9 @@ public class GameObject {
 	}
 	public void setGrounded(boolean b){
 		this.grounded = b;
+	}
+	public void setColor(Color c){
+		this.color = c;
 	}
 	
 	public int getId(){
@@ -103,7 +109,7 @@ public class GameObject {
 	
 	public void draw(Graphics g){
 		Color co = g.getColor();
-		g.setColor(Color.red);
+		g.setColor(this.color);
 		g.fillRect((int)this.x, (int)this.y, this.width, this.height);
 		g.setColor(co);
 	}
@@ -117,12 +123,20 @@ public class GameObject {
 
 		if(this.grounded){
 			this.vy = 0;
-			if(this.vx > 1){
-				this.ax = -300;
-				this.vx += this.ax * dt;
-			}else if(this.vx < 1){
-				this.ax = 300;
-				this.vx += this.ax * dt;
+			if(this.vx > 0){
+				this.ax = -1000;
+				if(this.vx + this.ax * dt < 0){
+					this.vx = 0;
+				}else{
+					this.vx += this.ax * dt;
+				}
+			}else if(this.vx < 0){
+				this.ax = 1000;
+				if(this.vx + this.ax * dt > 0){
+					this.vx = 0;
+				}else{
+					this.vx += this.ax * dt;
+				}
 			}else{
 				this.ax = 0;
 				this.vx = 0;
@@ -131,6 +145,11 @@ public class GameObject {
 			this.vy += this.ay * dt;
 		}
 		
+		if(this.vx > this.MAX_SPEED){
+			this.vx = this.MAX_SPEED;
+		}else if(this.vx < -1*this.MAX_SPEED){
+			this.vx = -1*this.MAX_SPEED;
+		}
 		
 		this.nx = this.x + this.vx * dt;// + 0.5 * this.ax * Math.pow(dt, 2); // xf = vo*(t*delta) + 1/2*a*(t*delta)^2
 		this.ny = this.y + this.vy * dt;// + 0.5 * this.ay * Math.pow(dt, 2);
