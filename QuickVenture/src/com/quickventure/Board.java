@@ -31,7 +31,7 @@ public class Board extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private final int TARGET_FPS = 80;
-	private final long OPTIMAL_TIME = 1000000000 / TARGET_FPS; // 16.67ms per frame
+	private final long OPTIMAL_TIME = 1000000000 / TARGET_FPS; 
 	private boolean gameRunning = false;
 	private int lastFpsTime = 0;
 	private int fps = 0;
@@ -44,17 +44,21 @@ public class Board extends JPanel {
 	private boolean right = false;
 	private boolean up = false;
 	private boolean down = false;
-	private boolean space = false;
+	private boolean shoot = false;
 	private String direction = "right";
+	
+	private boolean isShooting = false;
 	
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
 	private BufferedImage[] walking_bi = {Sprite.getSprite(0,1), Sprite.getSprite(1,1), Sprite.getSprite(2,1), Sprite.getSprite(3,1), Sprite.getSprite(4,1), Sprite.getSprite(5,1)};
 	private BufferedImage[] jumping_bi = {Sprite.getSprite(1,3), Sprite.getSprite(2,3)};
+	private BufferedImage[] shooting_bi = {Sprite.getSprite(0,2), Sprite.getSprite(1,2), Sprite.getSprite(2,2), Sprite.getSprite(3,2), Sprite.getSprite(4,2), Sprite.getSprite(5,2), Sprite.getSprite(0,3)};
 	
 	private Animation standing = new Animation(standing_bi, 10);
 	private Animation walking = new Animation(walking_bi, 10);
 	private Animation jumping = new Animation(jumping_bi, 1);
+	private Animation shooting = new Animation(shooting_bi, 10);
 	
 	private Animation animation = standing;
 	
@@ -76,8 +80,8 @@ public class Board extends JPanel {
 					case KeyEvent.VK_DOWN:
 						down = true;
 						break;
-					case KeyEvent.VK_SPACE:
-						space = true;
+					case KeyEvent.VK_S:
+						shoot = true;
 						break;
 				}
 			}
@@ -97,8 +101,8 @@ public class Board extends JPanel {
 					case KeyEvent.VK_DOWN:
 						down = false;
 						break;
-					case KeyEvent.VK_SPACE:
-						space = false;
+					case KeyEvent.VK_S:
+						shoot = false;
 						break;
 				}
 			}
@@ -184,11 +188,11 @@ public class Board extends JPanel {
 			}
 		}
 		if(up && hero.isGrounded()){
-			hero.setVY(hero.getVY() - 1000);
+			hero.setVY(hero.getVY() - 600); // Jump
 			hero.setGrounded(false);
 		}
 		if(down && !hero.isGrounded()){
-			hero.setVY(hero.getVY() + 30); // Needs to go back to default on landing though.
+			hero.setVY(hero.getVY() + 30); // Speeds up fall
 		}
 		
 		// Animation changes
@@ -212,6 +216,17 @@ public class Board extends JPanel {
 			if(hero.getVY() > 0 && animation.getCurrentFrame() == 0){
 				animation.updateOverride();
 			}
+		}
+		
+		if(shoot && hero.isGrounded() && animation == walking && animation.getUpdate()){
+			animation.setOverrideFrame(true);
+			animation.setFrameOverride(shooting.getFrameAtIndex(animation.getCurrentFrame()));
+		}else if(shoot && hero.isGrounded() && animation == standing && animation.getUpdate()){
+			animation.setOverrideFrame(true);
+			animation.setFrameOverride(shooting.getFrameAtIndex(6));
+		}else if(!shoot){
+			standing.setOverrideFrame(false);
+			walking.setOverrideFrame(false);
 		}
 		
 		

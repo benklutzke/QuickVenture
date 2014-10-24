@@ -6,15 +6,19 @@ import java.util.List;
 
 public class Animation {
 
-    private int frameCount;                 // Counts ticks for change
-    private int frameDelay;                 // frame delay 1-12 (You will have to play around with this)
-    private int currentFrame;               // animations current frame
-    private int animationDirection;         // animation direction (i.e counting forward or backward)
-    private int totalFrames;                // total amount of frames for your animation
+    private int frameCount;
+    private int frameDelay;
+    private int currentFrame;
+    private int animationDirection;
+    private int totalFrames;
 
-    private boolean stopped;                // has animations stopped
+    private boolean stopped;
 
     private List<Frame> frames = new ArrayList<Frame>();    // Arraylist of frames 
+    
+    private Frame frameOverride;
+    private boolean overrideFrame;
+    private boolean update;				// Only override frame once per frame time
 
     public Animation(BufferedImage[] frames, int frameDelay) {
         this.frameDelay = frameDelay;
@@ -29,7 +33,9 @@ public class Animation {
         this.currentFrame = 0;
         this.animationDirection = 1;
         this.totalFrames = this.frames.size();
-
+        
+        this.overrideFrame = false;
+        this.update = true;
     }
 
     public void start() {
@@ -78,7 +84,15 @@ public class Animation {
     }
 
     public BufferedImage getSprite() {
-        return frames.get(currentFrame).getFrame();
+    	if(this.overrideFrame){
+    		return this.frameOverride.getFrame();
+    	}else{
+    		return frames.get(currentFrame).getFrame();
+    	}
+    }
+    
+    public Frame getFrameAtIndex(int i){
+    	return frames.get(i);
     }
     
     public int getCurrentFrame() {
@@ -100,6 +114,7 @@ public class Animation {
                     currentFrame = totalFrames - 1;
                 }
             }
+            update = true;
         }
 
     }
@@ -110,5 +125,21 @@ public class Animation {
     	update();
     	this.stopped = temp;
     }
-
+    
+    public void setOverrideFrame(boolean b) {
+    	this.overrideFrame = b;
+    }
+    
+    public boolean getOverrideFrame() {
+    	return this.overrideFrame;
+    }
+    
+    public void setFrameOverride(Frame f) {
+    	this.frameOverride = f;
+    	this.update = false;
+    }
+    
+    public boolean getUpdate() {
+    	return this.update;
+    }
 }
