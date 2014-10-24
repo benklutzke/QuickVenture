@@ -80,6 +80,10 @@ public class Animation {
     public BufferedImage getSprite() {
         return frames.get(currentFrame).getFrame();
     }
+    
+    public int getCurrentFrame() {
+    	return this.currentFrame;
+    }
 
     public void update() {
         if (!stopped) {
@@ -98,6 +102,13 @@ public class Animation {
             }
         }
 
+    }
+    
+    public void updateOverride() {
+    	boolean temp = this.stopped;
+    	this.stopped = false;
+    	update();
+    	this.stopped = temp;
     }
 
 }

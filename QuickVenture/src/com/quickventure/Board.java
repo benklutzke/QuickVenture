@@ -50,9 +50,11 @@ public class Board extends JPanel {
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
 	private BufferedImage[] walking_bi = {Sprite.getSprite(0,1), Sprite.getSprite(1,1), Sprite.getSprite(2,1), Sprite.getSprite(3,1), Sprite.getSprite(4,1), Sprite.getSprite(5,1)};
+	private BufferedImage[] jumping_bi = {Sprite.getSprite(1,3), Sprite.getSprite(2,3)};
 	
 	private Animation standing = new Animation(standing_bi, 10);
 	private Animation walking = new Animation(walking_bi, 10);
+	private Animation jumping = new Animation(jumping_bi, 1);
 	
 	private Animation animation = standing;
 	
@@ -189,22 +191,32 @@ public class Board extends JPanel {
 			hero.setVY(hero.getVY() + 30); // Needs to go back to default on landing though.
 		}
 		
-		if(hero.isGrounded() && (left || right) && animation == standing){
-//			if(animation == standing){
-				animation.stop();
-				animation = walking;
-				animation.reset();
-				animation.start();
-//			}
-		}else if(hero.isGrounded() && !(left || right) && animation == walking){
+		// Animation changes
+		if(hero.isGrounded() && (left || right) && animation != walking){
+			animation.stop();
+			animation = walking;
+			animation.reset();
+			animation.start();
+		}else if(hero.isGrounded() && !(left || right) && animation != standing){
 			animation.stop();
 			animation = standing;
 			animation.reset();
 			animation.start();
+		}else if(!hero.isGrounded()){
+			if(animation != jumping){
+				animation.stop();
+				animation = jumping;
+				animation.reset();
+			}
+			
+			if(hero.getVY() > 0 && animation.getCurrentFrame() == 0){
+				animation.updateOverride();
+			}
 		}
 		
 		
 //		for(GameObject go : objects){
+		
 		hero.getNewLocation(delta);
 		//Collision detection
 		if(!hero.isGrounded() && hero.collides(floor)){
@@ -212,10 +224,9 @@ public class Board extends JPanel {
 			hero.setGrounded(true);
 			hero.setVY(0);
 		}
-			//Remove obsolete objects
-			
-//		}
-			//Move objects
+		//Remove obsolete objects
+		
+		//Move objects
 		hero.move();
 		animation.update();
 		repaint();
