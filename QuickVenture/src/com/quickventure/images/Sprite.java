@@ -30,8 +30,20 @@ public class Sprite {
         if (spriteSheet == null) {
             spriteSheet = loadSprite("hero_spritesheet");
         }
+        
+        // Things aren't even in the sprite sheet so offsets are needed based on sprite location
+        int xOffset = 0;
+        int yOffset = 0;
+        
+        if(yGrid == 1){
+        	yOffset = 3;
+        }else if(xGrid == 0 && yGrid == 2){
+        	yOffset = 2;
+        }else if(xGrid == 0 && yGrid == 3){
+        	yOffset = -2;
+        }
 
-        return spriteSheet.getSubimage(xGrid * TILE_SIZE_X, yGrid * TILE_SIZE_Y + (yGrid*3), TILE_SIZE_X, TILE_SIZE_Y);
+        return spriteSheet.getSubimage(xGrid * TILE_SIZE_X + xOffset, yGrid * TILE_SIZE_Y + yOffset, TILE_SIZE_X, TILE_SIZE_Y);
     }
 
 }

@@ -85,6 +85,12 @@ public class GameObject {
 	public double getY(){
 		return this.y;
 	}
+	public double getNX(){
+		return this.nx;
+	}
+	public double getNY(){
+		return this.ny;
+	}
 	public int getHeight(){
 		return this.height;
 	}

@@ -14,12 +14,14 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 import com.quickventure.images.Animation;
 import com.quickventure.images.Sprite;
+import com.quickventure.objects.Bullet;
 import com.quickventure.objects.GameObject;
 import com.quickventure.objects.Character;
 
@@ -31,7 +33,7 @@ public class Board extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private final int TARGET_FPS = 80;
-	private final long OPTIMAL_TIME = 1000000000 / TARGET_FPS; 
+	private final long OPTIMAL_TIME = 1000000000 / TARGET_FPS;
 	private boolean gameRunning = false;
 	private int lastFpsTime = 0;
 	private int fps = 0;
@@ -39,7 +41,8 @@ public class Board extends JPanel {
 	private int windowHeight = 0;
 	
 	private int objectId = 0;
-	private ArrayList<GameObject> objects = new ArrayList<GameObject>();
+	private ArrayList<GameObject> objects = new ArrayList<GameObject>(); // Make into charactor and ground objects
+	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 	private boolean left = false;
 	private boolean right = false;
 	private boolean up = false;
@@ -48,6 +51,7 @@ public class Board extends JPanel {
 	private String direction = "right";
 	
 	private boolean isShooting = false;
+	private int shootTimer = 0;
 	
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
@@ -193,6 +197,21 @@ public class Board extends JPanel {
 		}
 		if(down && !hero.isGrounded()){
 			hero.setVY(hero.getVY() + 30); // Speeds up fall
+		}		
+		// Shooting logic
+		if(shoot && !isShooting){
+			isShooting = true;
+			shoot();
+			shootTimer = 0;
+		}else if(isShooting){
+			if(shootTimer < TARGET_FPS){
+				shootTimer++;
+			}else{
+				shoot();
+				shootTimer = 0;
+			}
+		}else if(!shoot && isShooting){
+			isShooting = false;
 		}
 		
 		// Animation changes
@@ -242,9 +261,35 @@ public class Board extends JPanel {
 		//Remove obsolete objects
 		
 		//Move objects
+		Iterator<Bullet> i = bullets.iterator();
+		while(i.hasNext()){
+			Bullet b = i.next();
+			b.move();
+			if(b.destroy()){
+				bullets.remove(b);
+			}
+		}
+		
 		hero.move();
 		animation.update();
 		repaint();
+	}
+	
+	public void shoot() { 
+		Character hero = (Character)objects.get(1);
+		Bullet shot;
+		if(direction == "right"){
+			shot = new Bullet(objectId, hero.getX() + hero.getWidth(), hero.getY() + 20, 20, 20, 5, hero.getId(), 200);
+			shot.setVX(20);
+		}else{
+			shot = new Bullet(objectId, hero.getX(), hero.getY() + 20, 20, 20, 5, hero.getId(), 200);
+			shot.setVX(-20);
+		}
+			
+		shot.setColor(Color.black);
+		
+		bullets.add(shot);
+		objectId++;
 	}
 	
 	@Override
@@ -258,6 +303,10 @@ public class Board extends JPanel {
 		}else{
 			g.drawImage(animation.getSprite(), (int)hero.getX()+hero.getWidth(), (int)hero.getY(), -1*hero.getWidth(), hero.getHeight()+11, null);
 		}
+		
+		for(Bullet b : bullets){
+			b.draw(g);
+		}
 			
 //		for(GameObject go : objects){
 //			go.draw(g);
@@ -268,6 +317,7 @@ public class Board extends JPanel {
 		System.out.println(windowHeight);
 		System.out.println(windowWidth);
 		GameObject floor = new GameObject(objectId, 0, windowHeight-50, 50, windowWidth);
+		floor.setColor(Color.green);
 		objects.add(floor);
 		objectId++;
 		
