@@ -203,15 +203,15 @@ public class Board extends JPanel {
 			isShooting = true;
 			shoot();
 			shootTimer = 0;
+		}else if(!shoot && isShooting){
+			isShooting = false;
 		}else if(isShooting){
-			if(shootTimer < TARGET_FPS){
+			if(shootTimer < TARGET_FPS/3){
 				shootTimer++;
 			}else{
 				shoot();
 				shootTimer = 0;
 			}
-		}else if(!shoot && isShooting){
-			isShooting = false;
 		}
 		
 		// Animation changes
@@ -264,9 +264,10 @@ public class Board extends JPanel {
 		Iterator<Bullet> i = bullets.iterator();
 		while(i.hasNext()){
 			Bullet b = i.next();
+			b.getNewLocation(delta);
 			b.move();
 			if(b.destroy()){
-				bullets.remove(b);
+				i.remove();
 			}
 		}
 		
@@ -279,11 +280,11 @@ public class Board extends JPanel {
 		Character hero = (Character)objects.get(1);
 		Bullet shot;
 		if(direction == "right"){
-			shot = new Bullet(objectId, hero.getX() + hero.getWidth(), hero.getY() + 20, 20, 20, 5, hero.getId(), 200);
-			shot.setVX(20);
+			shot = new Bullet(objectId, hero.getX() + hero.getWidth(), hero.getY() + 20, 20, 20, 5, hero.getId(), 400);
+			shot.setVX(500);
 		}else{
-			shot = new Bullet(objectId, hero.getX(), hero.getY() + 20, 20, 20, 5, hero.getId(), 200);
-			shot.setVX(-20);
+			shot = new Bullet(objectId, hero.getX(), hero.getY() + 20, 20, 20, 5, hero.getId(), 400);
+			shot.setVX(-500);
 		}
 			
 		shot.setColor(Color.black);

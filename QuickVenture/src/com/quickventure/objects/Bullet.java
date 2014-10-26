@@ -12,6 +12,7 @@ public class Bullet extends GameObject{
 		this.shooterId = sId;
 		this.duration = dur;
 		this.distanceTraveled = 0;
+		setLimited(false);
 	}
 	
 	public int getDamage(){

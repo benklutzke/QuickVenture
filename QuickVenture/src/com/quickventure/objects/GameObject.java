@@ -24,6 +24,7 @@ public class GameObject {
 	private double ay;		// Acceleration y component
 	private boolean grounded;
 	private Color color;
+	private boolean limited; // Speed limit for guy but not for bullets
 //	private boolean yPGround;
 //	private boolean yNGround;
 //	private boolean xPGround;
@@ -43,6 +44,7 @@ public class GameObject {
 		this.ax = 0;
 		this.ay = 0;
 		this.color = Color.red;
+		this.limited = true;
 	}
 	
 	public void setX(double x){
@@ -74,6 +76,9 @@ public class GameObject {
 	}
 	public void setColor(Color c){
 		this.color = c;
+	}
+	public void setLimited(boolean b){
+		this.limited = b;
 	}
 	
 	public int getId(){
@@ -151,10 +156,12 @@ public class GameObject {
 			this.vy += this.ay * dt;
 		}
 		
-		if(this.vx > this.MAX_SPEED){
-			this.vx = this.MAX_SPEED;
-		}else if(this.vx < -1*this.MAX_SPEED){
-			this.vx = -1*this.MAX_SPEED;
+		if(this.limited){
+			if(this.vx > this.MAX_SPEED){
+				this.vx = this.MAX_SPEED;
+			}else if(this.vx < -1*this.MAX_SPEED){
+				this.vx = -1*this.MAX_SPEED;
+			}
 		}
 		
 		this.nx = this.x + this.vx * dt;// + 0.5 * this.ax * Math.pow(dt, 2); // xf = vo*(t*delta) + 1/2*a*(t*delta)^2
