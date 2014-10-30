@@ -39,6 +39,8 @@ public class Board extends JPanel {
 	private int fps = 0;
 	private int windowWidth = 0;
 	private int windowHeight = 0;
+	private int camX = 0;
+	private int camY = 0;
 	
 	private int objectId = 0;
 	private ArrayList<GameObject> objects = new ArrayList<GameObject>(); // Make into charactor and ground objects
@@ -138,6 +140,8 @@ public class Board extends JPanel {
 		long lastLoopTime = System.nanoTime();
 		windowWidth = getWidth();
 		windowHeight = getHeight();
+		camX = windowWidth / 2;
+		camY = windowWidth / 2;
 		initBoard();
 		animation.start();
 		
@@ -152,7 +156,7 @@ public class Board extends JPanel {
 			
 			// Prints out number of game updates in a second
 			if(lastFpsTime >= 1000000000) {
-				System.out.println("FPS: " + fps);
+				System.out.println("FPS: " + fps + ", camX: " + camX);
 //				System.out.println("Delta: " + delta);
 				lastFpsTime = 0;
 				fps = 0;
@@ -216,7 +220,6 @@ public class Board extends JPanel {
 				shootTimer = 0;
 			}else if(!shoot && isShooting){ // 's' key is released
 				isShooting = false;
-				System.out.println("Not Shooting");
 			}else if(isShooting){ // 's' key is held down 
 				// Auto fire handler
 				if(autoFire && shootTimer < 5){ // Waits for five frames
@@ -271,7 +274,7 @@ public class Board extends JPanel {
 		}
 		
 		
-//		for(GameObject go : objects){
+		//Move objects
 		
 		hero.getNewLocation(delta);
 		//Collision detection
@@ -280,9 +283,7 @@ public class Board extends JPanel {
 			hero.setGrounded(true);
 			hero.setVY(0);
 		}
-		//Remove obsolete objects
 		
-		//Move objects
 		Iterator<Bullet> i = bullets.iterator();
 		while(i.hasNext()){
 			Bullet b = i.next();
@@ -291,10 +292,20 @@ public class Board extends JPanel {
 			if(b.destroy()){
 				i.remove();
 			}
+		}		
+		hero.move();
+		
+		// Prepare next character animation
+		animation.update();
+		
+		// Camera movement logic
+		int heroX = (int)hero.getX() + hero.getWidth()/2;
+		if(heroX > camX + 50){
+			camX = heroX - 50;
+		}else if(heroX < camX - 50){
+			camX = heroX + 50;
 		}
 		
-		hero.move();
-		animation.update();
 		repaint();
 	}
 	
@@ -317,18 +328,20 @@ public class Board extends JPanel {
 	
 	@Override
 	public void paintComponent(Graphics g) {
+		int camXOffset = camX - windowWidth/2;
+		
 		super.paintComponent(g);
 		Character hero = (Character)objects.get(1);
-		objects.get(0).draw(g);
+		objects.get(0).draw(g, camXOffset);
 		
 		if(direction == "right"){
-			g.drawImage(animation.getSprite(), (int)hero.getX(), (int)hero.getY(), hero.getWidth(), hero.getHeight()+11, null);
+			g.drawImage(animation.getSprite(), (int)hero.getX() - camXOffset, (int)hero.getY(), hero.getWidth(), hero.getHeight()+11, null);
 		}else{
-			g.drawImage(animation.getSprite(), (int)hero.getX()+hero.getWidth(), (int)hero.getY(), -1*hero.getWidth(), hero.getHeight()+11, null);
+			g.drawImage(animation.getSprite(), (int)hero.getX()+hero.getWidth() - camXOffset, (int)hero.getY(), -1*hero.getWidth(), hero.getHeight()+11, null);
 		}
 		
 		for(Bullet b : bullets){
-			b.draw(g);
+			b.draw(g, camXOffset);
 		}
 			
 //		for(GameObject go : objects){
@@ -339,45 +352,16 @@ public class Board extends JPanel {
 	private void initBoard() {
 		System.out.println(windowHeight);
 		System.out.println(windowWidth);
-		GameObject floor = new GameObject(objectId, 0, windowHeight-50, 50, windowWidth);
+		GameObject floor = new GameObject(objectId, 0-windowWidth/2, windowHeight-50, 50, windowWidth*2);
 		floor.setColor(Color.green);
 		objects.add(floor);
 		objectId++;
 		
 		Character hero = new Character(objectId, 50, 50, 83, 80, 40, "Hero");
+		hero.setX(camX - hero.getWidth()/2);
 		objects.add(hero);
 		objectId++;
 		
 		hero.setAY(2000);
 	}
-
-	
-//	private void loadImage() {
-//		ImageIcon ii = new ImageIcon("images/ball.png");
-//		image = ii.getImage();
-//	}
-	
-//	private void drawDonut(Graphics g) {
-//		Graphics2D g2d = (Graphics2D) g;
-//		
-//		RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//		
-//		rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-//		
-//		g2d.setRenderingHints(rh);
-//		
-//		Dimension size = getSize();
-//		double w = size.getWidth();
-//		double h = size.getHeight();
-//		
-//		Ellipse2D e = new Ellipse2D.Double(0, 0, 80, 130);
-//		g2d.setStroke(new BasicStroke(1));
-//		g2d.setColor(Color.red);
-//		
-//		for(double  d = 0; d < 360; d += 5){
-//			AffineTransform at = AffineTransform.getTranslateInstance(w/2, h/2);
-//			at.rotate(Math.toRadians(d));
-//			g2d.draw(at.createTransformedShape(e));
-//		}
-//	}
 }

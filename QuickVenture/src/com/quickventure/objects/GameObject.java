@@ -118,10 +118,10 @@ public class GameObject {
 		return this.grounded;
 	}
 	
-	public void draw(Graphics g){
+	public void draw(Graphics g, int xOffset){
 		Color co = g.getColor();
 		g.setColor(this.color);
-		g.fillRect((int)this.x, (int)this.y, this.width, this.height);
+		g.fillRect((int)this.x - xOffset, (int)this.y, this.width, this.height);
 		g.setColor(co);
 	}
 	public void getNewLocation(double delta){
