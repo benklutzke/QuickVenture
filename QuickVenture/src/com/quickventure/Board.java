@@ -51,7 +51,9 @@ public class Board extends JPanel {
 	private String direction = "right";
 	
 	private boolean isShooting = false;
+	private boolean autoFire = false;
 	private int shootTimer = 0;
+	private int autoShots = 0;
 	
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
@@ -197,20 +199,40 @@ public class Board extends JPanel {
 		}
 		if(down && !hero.isGrounded()){
 			hero.setVY(hero.getVY() + 30); // Speeds up fall
-		}		
+		}	
+		
 		// Shooting logic
-		if(shoot && !isShooting){
-			isShooting = true;
-			shoot();
-			shootTimer = 0;
-		}else if(!shoot && isShooting){
-			isShooting = false;
-		}else if(isShooting){
-			if(shootTimer < TARGET_FPS/3){
-				shootTimer++;
-			}else{
+		if(autoShots >= 10 && shootTimer < TARGET_FPS){ // One second delay after 10 autofire shots
+			shootTimer++;
+		}else{
+			if(autoShots >= 10){  // Reset autofire
+				autoShots = 0;
+				shootTimer = 0;				
+			}
+			if(shoot && !isShooting){ // Simple shot by pressing 's' key
+				isShooting = true;
+				autoFire = false;
 				shoot();
 				shootTimer = 0;
+			}else if(!shoot && isShooting){ // 's' key is released
+				isShooting = false;
+				System.out.println("Not Shooting");
+			}else if(isShooting){ // 's' key is held down 
+				// Auto fire handler
+				if(autoFire && shootTimer < 5){ // Waits for five frames
+					shootTimer++;
+				}else if(autoFire){ // Shoots in autofire mode
+					shoot();
+					autoShots++;
+					shootTimer = 0;
+				}else if(shootTimer < TARGET_FPS){ // wait for 's' key to be held down for one second
+					shootTimer++;
+				}else{ // Begin autofire shooting
+					shoot();
+					shootTimer = 0;
+					autoFire = true;
+					autoShots = 0;
+				}
 			}
 		}
 		
@@ -280,11 +302,11 @@ public class Board extends JPanel {
 		Character hero = (Character)objects.get(1);
 		Bullet shot;
 		if(direction == "right"){
-			shot = new Bullet(objectId, hero.getX() + hero.getWidth(), hero.getY() + 20, 20, 20, 5, hero.getId(), 400);
-			shot.setVX(500);
+			shot = new Bullet(objectId, hero.getX() + hero.getWidth(), hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
+			shot.setVX(700);
 		}else{
-			shot = new Bullet(objectId, hero.getX(), hero.getY() + 20, 20, 20, 5, hero.getId(), 400);
-			shot.setVX(-500);
+			shot = new Bullet(objectId, hero.getX(), hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
+			shot.setVX(-700);
 		}
 			
 		shot.setColor(Color.black);
