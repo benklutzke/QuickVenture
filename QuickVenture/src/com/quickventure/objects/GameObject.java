@@ -3,6 +3,11 @@ package com.quickventure.objects;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 public class GameObject {
 
@@ -25,6 +30,7 @@ public class GameObject {
 	private boolean grounded;
 	private Color color;
 	private boolean limited; // Speed limit for guy but not for bullets
+	private BufferedImage image = null;
 //	private boolean yPGround;
 //	private boolean yNGround;
 //	private boolean xPGround;
@@ -80,6 +86,17 @@ public class GameObject {
 	public void setLimited(boolean b){
 		this.limited = b;
 	}
+	public void setImage(String s){
+		try {
+            image = ImageIO.read(new File("images/" + s));
+            if(image.getHeight() < this.height){
+            	image = image.getSubimage(0, 0, image.getWidth(), this.height);
+            }
+        } catch (IOException e) {
+        	System.out.println(s);
+            e.printStackTrace();
+        }
+	}
 	
 	public int getId(){
 		return this.id;
@@ -119,10 +136,27 @@ public class GameObject {
 	}
 	
 	public void draw(Graphics g, int xOffset){
-		Color co = g.getColor();
-		g.setColor(this.color);
-		g.fillRect((int)this.x - xOffset, (int)this.y, this.width, this.height);
-		g.setColor(co);
+		if(image == null){
+			Color co = g.getColor();
+			g.setColor(this.color);
+			g.fillRect((int)this.x - xOffset, (int)this.y, this.width, this.height);
+			g.setColor(co);
+		}else{
+			int imageWidth = image.getWidth();
+			int imageHeight = image.getHeight();
+			
+			for(int i = (int)this.x; i < this.width; i += imageWidth){
+				if(i + imageWidth > this.width){
+					imageWidth = this.width - i;
+					BufferedImage temp = image.getSubimage(0, 0, imageWidth, imageHeight);
+					g.drawImage(temp, i - xOffset, (int)this.y, imageWidth, this.height, null);
+				}else{
+					g.drawImage(image, i - xOffset, (int)this.y, imageWidth, this.height, null);
+				}
+			}	
+			
+//			g.drawImage(image, x, y, w, h, null);
+		}
 	}
 	public void getNewLocation(double delta){
 		/*

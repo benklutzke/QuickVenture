@@ -354,6 +354,7 @@ public class Board extends JPanel {
 		System.out.println(windowWidth);
 		GameObject floor = new GameObject(objectId, 0-windowWidth/2, windowHeight-50, 50, windowWidth*2);
 		floor.setColor(Color.green);
+		floor.setImage("ground.png");
 		objects.add(floor);
 		objectId++;
 		
