@@ -145,7 +145,7 @@ public class GameObject {
 			int imageWidth = image.getWidth();
 			int imageHeight = image.getHeight();
 			
-			for(int i = (int)this.x; i < this.width; i += imageWidth){
+			for(int i = (int)this.x; i < (int)this.x + this.width; i += imageWidth){
 				if(i + imageWidth > this.width){
 					imageWidth = this.width - i;
 					BufferedImage temp = image.getSubimage(0, 0, imageWidth, imageHeight);
@@ -153,9 +153,7 @@ public class GameObject {
 				}else{
 					g.drawImage(image, i - xOffset, (int)this.y, imageWidth, this.height, null);
 				}
-			}	
-			
-//			g.drawImage(image, x, y, w, h, null);
+			}
 		}
 	}
 	public void getNewLocation(double delta){
