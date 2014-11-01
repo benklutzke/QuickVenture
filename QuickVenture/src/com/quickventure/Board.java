@@ -43,7 +43,9 @@ public class Board extends JPanel {
 	private int camY = 0;
 	
 	private int objectId = 0;
-	private ArrayList<GameObject> objects = new ArrayList<GameObject>(); // Make into charactor and ground objects
+	private ArrayList<GameObject> grounds = new ArrayList<GameObject>();
+	private ArrayList<Character> creatures = new ArrayList<Character>();
+	private Character hero = null;
 	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 	private boolean left = false;
 	private boolean right = false;
@@ -56,6 +58,7 @@ public class Board extends JPanel {
 	private boolean autoFire = false;
 	private int shootTimer = 0;
 	private int autoShots = 0;
+	private final int AUTOFIRE_RATE = 10; // Number of frames delayed between each shot.
 	
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
@@ -151,16 +154,15 @@ public class Board extends JPanel {
 			lastLoopTime = now;
 			double delta = updateLength / (double)OPTIMAL_TIME;
 			
-			lastFpsTime += updateLength;
-			fps++;
-			
-			// Prints out number of game updates in a second
-			if(lastFpsTime >= 1000000000) {
-				System.out.println("FPS: " + fps + ", camX: " + camX);
+//			lastFpsTime += updateLength;
+//			fps++;
+//			// Prints out number of game updates in a second
+//			if(lastFpsTime >= 1000000000) {
+//				System.out.println("FPS: " + fps + ", camX: " + camX);
 //				System.out.println("Delta: " + delta);
-				lastFpsTime = 0;
-				fps = 0;
-			}
+//				lastFpsTime = 0;
+//				fps = 0;
+//			}
 			
 			gameUpdate(delta);
 			
@@ -170,16 +172,7 @@ public class Board extends JPanel {
 		}
 	}
 	
-	private void gameUpdate(double delta) {		
-		//Check for new objects
-		
-		// Need to determine the new coordinates of each object, determine if they collide with something
-		// and then have them move appropriately. So the move logic should be put into a new method that
-		// just determines the newX and newY without actually setting them so they can be changed to prevent
-		// overlapping objects (Hero lands on the floor).
-		GameObject floor = objects.get(0);
-		Character hero = (Character)objects.get(1);
-
+	private void gameUpdate(double delta) {
 		//Check for user inputs
 		if(left){
 			direction = "left";
@@ -222,7 +215,7 @@ public class Board extends JPanel {
 				isShooting = false;
 			}else if(isShooting){ // 's' key is held down 
 				// Auto fire handler
-				if(autoFire && shootTimer < 5){ // Waits for five frames
+				if(autoFire && shootTimer < AUTOFIRE_RATE){ // Waits for n frames
 					shootTimer++;
 				}else if(autoFire){ // Shoots in autofire mode
 					shoot();
@@ -278,11 +271,14 @@ public class Board extends JPanel {
 		
 		hero.getNewLocation(delta);
 		//Collision detection
-		if(!hero.isGrounded() && hero.collides(floor)){
-			hero.setNewLocation(-1, floor.getY()-hero.getHeight());
-			hero.setGrounded(true);
-			hero.setVY(0);
+		for(GameObject o : grounds){
+			if(!hero.isGrounded() && hero.collides(o)){
+				hero.setNewLocation(-1, o.getY()-hero.getHeight());
+				hero.setGrounded(true);
+				hero.setVY(0);
+			}
 		}
+		hero.move();
 		
 		Iterator<Bullet> i = bullets.iterator();
 		while(i.hasNext()){
@@ -293,10 +289,7 @@ public class Board extends JPanel {
 				i.remove();
 			}
 		}		
-		hero.move();
 		
-		// Prepare next character animation
-		animation.update();
 		
 		// Camera movement logic
 		int heroX = (int)hero.getX() + hero.getWidth()/2;
@@ -306,11 +299,13 @@ public class Board extends JPanel {
 			camX = heroX + 50;
 		}
 		
+		// Prepare next character animation
+		animation.update();
+		
 		repaint();
 	}
 	
 	public void shoot() { 
-		Character hero = (Character)objects.get(1);
 		Bullet shot;
 		if(direction == "right"){
 			shot = new Bullet(objectId, hero.getX() + hero.getWidth(), hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
@@ -331,38 +326,49 @@ public class Board extends JPanel {
 		int camXOffset = camX - windowWidth/2;
 		
 		super.paintComponent(g);
-		Character hero = (Character)objects.get(1);
-		objects.get(0).draw(g, camXOffset);
 		
+		// Draws hero
 		if(direction == "right"){
 			g.drawImage(animation.getSprite(), (int)hero.getX() - camXOffset, (int)hero.getY(), hero.getWidth(), hero.getHeight()+11, null);
 		}else{
 			g.drawImage(animation.getSprite(), (int)hero.getX()+hero.getWidth() - camXOffset, (int)hero.getY(), -1*hero.getWidth(), hero.getHeight()+11, null);
 		}
 		
+		// Draws other stuff
 		for(Bullet b : bullets){
 			b.draw(g, camXOffset);
 		}
-			
+		for(GameObject o : grounds){
+			o.draw(g, camXOffset);
+		}
+		for(Character c : creatures){
+			c.draw(g, camXOffset);
+		}
 //		for(GameObject go : objects){
 //			go.draw(g);
 //		}
 	}
 	
 	private void initBoard() {
-		System.out.println(windowHeight);
-		System.out.println(windowWidth);
-		GameObject floor = new GameObject(objectId, 0-windowWidth/2, windowHeight-50, 50, windowWidth*2);
-		floor.setColor(Color.green);
+//		System.out.println(windowHeight);
+//		System.out.println(windowWidth);
+		GameObject floor = new GameObject(objectId, 0-windowWidth/2, windowHeight-50, 50, windowWidth*5);
 		floor.setImage("ground.png");
-		objects.add(floor);
+		grounds.add(floor);
 		objectId++;
 		
-		Character hero = new Character(objectId, 50, 50, 83, 80, 40, "Hero");
+		hero = new Character(objectId, 50, 50, 83, 80, 40, "Hero");
 		hero.setX(camX - hero.getWidth()/2);
-		objects.add(hero);
+		hero.setAY(2000);
 		objectId++;
 		
-		hero.setAY(2000);
+		for(int i = (int)hero.getX() + windowWidth; i < floor.getWidth(); i += windowWidth){
+			Character c = new Character(objectId, i, floor.getY() - 62, 74, 46, 20, "Mob");
+			c.setColor(Color.blue);
+			c.setImage("troll.png");
+			creatures.add(c);
+			objectId++;
+		}
+		
 	}
 }

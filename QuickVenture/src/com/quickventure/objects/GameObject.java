@@ -145,13 +145,17 @@ public class GameObject {
 			int imageWidth = image.getWidth();
 			int imageHeight = image.getHeight();
 			
-			for(int i = (int)this.x; i < (int)this.x + this.width; i += imageWidth){
-				if(i + imageWidth > this.width){
-					imageWidth = this.width - i;
-					BufferedImage temp = image.getSubimage(0, 0, imageWidth, imageHeight);
-					g.drawImage(temp, i - xOffset, (int)this.y, imageWidth, this.height, null);
-				}else{
-					g.drawImage(image, i - xOffset, (int)this.y, imageWidth, this.height, null);
+			if(imageWidth == this.width){
+				g.drawImage(image, (int)this.x - xOffset, (int)this.y, this.width, this.height, null);
+			}else{
+				for(int i = (int)this.x; i < (int)this.x + this.width; i += imageWidth){
+					if(i + imageWidth > this.width){
+						imageWidth = this.width - i;
+						BufferedImage temp = image.getSubimage(0, 0, imageWidth, imageHeight);
+						g.drawImage(temp, i - xOffset, (int)this.y, imageWidth, this.height, null);
+					}else{
+						g.drawImage(image, i - xOffset, (int)this.y, imageWidth, this.height, null);
+					}
 				}
 			}
 		}
