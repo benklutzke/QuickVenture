@@ -11,7 +11,7 @@ import javax.imageio.ImageIO;
 
 public class GameObject {
 
-	private final double TARGET_FPS = 80.0;
+	protected final double TARGET_FPS = 80.0;
 	private final double OPTIMAL_TIME = 1 / TARGET_FPS; // 16.67ms per frame
 	private double maxSpeed = 200;
 	

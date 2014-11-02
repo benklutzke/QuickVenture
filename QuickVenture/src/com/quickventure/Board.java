@@ -53,11 +53,7 @@ public class Board extends JPanel {
 	private boolean down = false;
 	private boolean shoot = false;
 	private String direction = "right";
-	
-	private boolean autoFire = false;
-	private int autoShots = 0;
-	private final int AUTOFIRE_RATE = 10; // Number of frames delayed between each shot.
-	
+		
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
 	private BufferedImage[] walking_bi = {Sprite.getSprite(0,1), Sprite.getSprite(1,1), Sprite.getSprite(2,1), Sprite.getSprite(3,1), Sprite.getSprite(4,1), Sprite.getSprite(5,1)};
@@ -197,38 +193,42 @@ public class Board extends JPanel {
 		}	
 		
 		// Shooting logic
-		if(autoShots >= 10 && hero.getShootTimer() < TARGET_FPS){ // One second delay after 10 autofire shots
-			hero.incShootTimer();
-		}else{
-			if(autoShots >= 10){  // Reset autofire
-				autoShots = 0;
-				hero.resetShootTimer();
-			}
-			if(shoot && !hero.getIsShooting()){ // Simple shot by pressing 's' key
-				hero.setIsShooting(true);
-				autoFire = false;
-				shoot();
-				hero.resetShootTimer();
-			}else if(!shoot && hero.getIsShooting()){ // 's' key is released
-				hero.setIsShooting(false);
-			}else if(hero.getIsShooting()){ // 's' key is held down 
-				// Auto fire handler
-				if(autoFire && hero.shouldShoot()){ // Waits for n frames
-					hero.incShootTimer();
-				}else if(autoFire){ // Shoots in autofire mode
-					shoot();
-					autoShots++;
-					hero.resetShootTimer();
-				}else if(hero.getShootTimer() < TARGET_FPS){ // wait for 's' key to be held down for one second
-					hero.incShootTimer();
-				}else{ // Begin autofire shooting
-					shoot();
-					hero.resetShootTimer();
-					autoFire = true;
-					autoShots = 0;
-				}
-			}
+		if(hero.shoot(shoot)){
+			heroShoot();
 		}
+		
+//		if(autoShots >= 10 && hero.getShootTimer() < TARGET_FPS){ // One second delay after 10 autofire shots
+//			hero.incShootTimer();
+//		}else{
+//			if(autoShots >= 10){  // Reset autofire
+//				autoShots = 0;
+//				hero.resetShootTimer();
+//			}
+//			if(shoot && !hero.getIsShooting()){ // Simple shot by pressing 's' key
+//				hero.setIsShooting(true);
+//				autoFire = false;
+//				shoot();
+//				hero.resetShootTimer();
+//			}else if(!shoot && hero.getIsShooting()){ // 's' key is released
+//				hero.setIsShooting(false);
+//			}else if(hero.getIsShooting()){ // 's' key is held down 
+//				// Auto fire handler
+//				if(autoFire && hero.shouldShoot()){ // Waits for n frames
+//					hero.incShootTimer();
+//				}else if(autoFire){ // Shoots in autofire mode
+//					shoot();
+//					autoShots++; 
+//					hero.resetShootTimer();
+//				}else if(hero.getShootTimer() < TARGET_FPS){ // wait for 's' key to be held down for one second
+//					hero.incShootTimer();
+//				}else{ // Begin autofire shooting
+//					shoot();
+//					hero.resetShootTimer();
+//					autoFire = true;
+//					autoShots = 0;
+//				}
+//			}
+//		}
 		
 		// Animation changes
 		if(hero.isGrounded() && (left || right) && animation != walking){
@@ -267,15 +267,20 @@ public class Board extends JPanel {
 		// Creature logic
 		for(Character c : creatures){
 			if(Math.abs(hero.getX() - c.getX()) <= windowWidth/2){ // Mob is close enough to see hero
+				int dir;
 				if(hero.getX() < c.getX()){ // Hero is to the left of mob
 					c.setVX(c.getVX() - 10);
+					dir = -1;
 				}else{
 					c.setVX(c.getVX() + 10);
+					dir = 1;
 				}
-				c.setIsShooting(true);
+				if(c.shoot(true)){
+					mobShoot(c, dir);
+				}
 			}else{
 				c.setVX(0);
-				c.setIsShooting(false);
+				c.resetShots();
 			}
 		}
 		
@@ -321,10 +326,10 @@ public class Board extends JPanel {
 		repaint();
 	}
 	
-	public void shoot() { 
+	public void heroShoot() { 
 		Bullet shot;
 		if(direction == "right"){
-			shot = new Bullet(objectId, hero.getX() + hero.getWidth(), hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
+			shot = new Bullet(objectId, hero.getX() + hero.getWidth() - 5, hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
 			shot.setVX(700);
 		}else{
 			shot = new Bullet(objectId, hero.getX(), hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
@@ -332,6 +337,22 @@ public class Board extends JPanel {
 		}
 			
 		shot.setColor(Color.black);
+		
+		bullets.add(shot);
+		objectId++;
+	}
+	
+	public void mobShoot(Character mob, int dir) {
+		Bullet shot;
+		if(dir == 1){
+			shot = new Bullet(objectId, mob.getX() + mob.getWidth(), mob.getY() + 10, 10, 10, 5, mob.getId(), 600);
+			shot.setVX(400);
+		}else{
+			shot = new Bullet(objectId, mob.getX(), mob.getY() + 10, 10, 10, 5, mob.getId(), 600);
+			shot.setVX(-400);
+		}
+			
+		shot.setColor(Color.red);
 		
 		bullets.add(shot);
 		objectId++;
@@ -376,7 +397,8 @@ public class Board extends JPanel {
 		hero = new Character(objectId, 50, 50, 83, 80, 40, "Hero");
 		hero.setX(camX - hero.getWidth()/2);
 		hero.setAY(2000);
-		hero.setShootDelay(AUTOFIRE_RATE);
+		hero.setHero();
+		hero.setAutoFireMode(false);
 		objectId++;
 		
 		// Generates mobs every windowWidth on main ground
@@ -384,7 +406,7 @@ public class Board extends JPanel {
 			Character c = new Character(objectId, i, floor.getY() - 62, 74, 46, 20, "Mob");
 			c.setImage("troll.png");
 			c.setMaxSpeed(70);
-			c.setShootDelay(AUTOFIRE_RATE*2);
+			
 			creatures.add(c);
 			objectId++;
 		}
