@@ -13,7 +13,7 @@ public class GameObject {
 
 	private final double TARGET_FPS = 80.0;
 	private final double OPTIMAL_TIME = 1 / TARGET_FPS; // 16.67ms per frame
-	private final double MAX_SPEED = 200;
+	private double maxSpeed = 200;
 	
 	private int id;
 	private double x;		// Current x coordinate
@@ -96,6 +96,9 @@ public class GameObject {
         	System.out.println(s);
             e.printStackTrace();
         }
+	}
+	public void setMaxSpeed(double d){
+		this.maxSpeed = d;
 	}
 	
 	public int getId(){
@@ -193,10 +196,10 @@ public class GameObject {
 		}
 		
 		if(this.limited){
-			if(this.vx > this.MAX_SPEED){
-				this.vx = this.MAX_SPEED;
-			}else if(this.vx < -1*this.MAX_SPEED){
-				this.vx = -1*this.MAX_SPEED;
+			if(this.vx > this.maxSpeed){
+				this.vx = this.maxSpeed;
+			}else if(this.vx < -1*this.maxSpeed){
+				this.vx = -1*this.maxSpeed;
 			}
 		}
 		
