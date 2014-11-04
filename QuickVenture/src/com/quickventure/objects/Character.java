@@ -53,14 +53,14 @@ public class Character extends GameObject {
 			}
 			if(shoot && !isShooting){ // Simple shot by pressing 's' key
 				isShooting = true;
-				if(isHero){
-					autoFire = false;
-				}
+				autoShots++;
 				shootTimer = 0;
 				return true;
 			}else if(!shoot && isShooting){ // 's' key is released
 				isShooting = false;
-			}else if(isShooting){ // 's' key is held down 
+				autoFire = false;
+				autoShots = 0;
+			}else if(shoot && isShooting){ // 's' key is held down 
 				// Auto fire handler
 				if(autoFire && shootTimer < autoFireRate){ // Waits for n frames
 					shootTimer++;
@@ -73,7 +73,6 @@ public class Character extends GameObject {
 				}else{ // Begin autofire shooting
 					shootTimer = 0;
 					autoFire = true;
-					autoShots = 0;
 					return true;
 				}
 			}

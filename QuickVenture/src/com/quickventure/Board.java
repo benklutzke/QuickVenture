@@ -197,39 +197,6 @@ public class Board extends JPanel {
 			heroShoot();
 		}
 		
-//		if(autoShots >= 10 && hero.getShootTimer() < TARGET_FPS){ // One second delay after 10 autofire shots
-//			hero.incShootTimer();
-//		}else{
-//			if(autoShots >= 10){  // Reset autofire
-//				autoShots = 0;
-//				hero.resetShootTimer();
-//			}
-//			if(shoot && !hero.getIsShooting()){ // Simple shot by pressing 's' key
-//				hero.setIsShooting(true);
-//				autoFire = false;
-//				shoot();
-//				hero.resetShootTimer();
-//			}else if(!shoot && hero.getIsShooting()){ // 's' key is released
-//				hero.setIsShooting(false);
-//			}else if(hero.getIsShooting()){ // 's' key is held down 
-//				// Auto fire handler
-//				if(autoFire && hero.shouldShoot()){ // Waits for n frames
-//					hero.incShootTimer();
-//				}else if(autoFire){ // Shoots in autofire mode
-//					shoot();
-//					autoShots++; 
-//					hero.resetShootTimer();
-//				}else if(hero.getShootTimer() < TARGET_FPS){ // wait for 's' key to be held down for one second
-//					hero.incShootTimer();
-//				}else{ // Begin autofire shooting
-//					shoot();
-//					hero.resetShootTimer();
-//					autoFire = true;
-//					autoShots = 0;
-//				}
-//			}
-//		}
-		
 		// Animation changes
 		if(hero.isGrounded() && (left || right) && animation != walking){
 			animation.stop();
