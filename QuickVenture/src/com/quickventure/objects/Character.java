@@ -1,6 +1,8 @@
 package com.quickventure.objects;
 
 public class Character extends GameObject {
+	private final int MAX_HEALTH = 40;
+	
 	private int health;
 	private String name;
 	private boolean isShooting;
@@ -90,6 +92,9 @@ public class Character extends GameObject {
 	
 	public int takeDamage(int d){
 		this.health -= d;
+		if(this.health > this.MAX_HEALTH)
+			this.health = this.MAX_HEALTH;
+		
 		return this.health;
 	}
 }

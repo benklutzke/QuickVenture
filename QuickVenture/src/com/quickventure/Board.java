@@ -53,6 +53,8 @@ public class Board extends JPanel {
 	private boolean down = false;
 	private boolean shoot = false;
 	private String direction = "right";
+	private int score = 0;
+	private int hpTimer = 0;
 		
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
@@ -231,9 +233,21 @@ public class Board extends JPanel {
 			walking.setOverrideFrame(false);
 		}
 		
+		// Restore 5 hp/sec while standing still
+		if(animation == standing){
+			if(hpTimer >= TARGET_FPS){
+				hero.takeDamage(-5);
+				hpTimer = 0;
+			}else{
+				hpTimer++;
+			}
+		}else{
+			hpTimer = 0;
+		}
+		
 		// Creature logic
 		for(Character c : creatures){
-			if(Math.abs(hero.getX() - c.getX()) <= windowWidth/2){ // Mob is close enough to see hero
+			if(Math.abs(hero.getX() - c.getX()) <= windowWidth/2 + 150){ // Mob is close enough to see hero
 				int dir;
 				if(hero.getX() < c.getX()){ // Hero is to the left of mob
 					c.setVX(c.getVX() - 10);
@@ -251,7 +265,7 @@ public class Board extends JPanel {
 			}
 		}
 		
-		//Move objects		
+		//Update objects		
 		hero.getNewLocation(delta);
 		//Ground collision detection
 		for(GameObject o : grounds){
@@ -263,20 +277,38 @@ public class Board extends JPanel {
 		}
 		hero.move();
 		
-		for(Character c : creatures){
-			c.getNewLocation(delta);
-			c.move();
+		Iterator<Character> ic = creatures.iterator();
+		while(ic.hasNext()){
+			Character c = ic.next();
+			
+			if(c.getHealth() <= 0){
+				ic.remove();
+				score += 5;
+				hero.takeDamage(-10);
+			}else{
+				c.getNewLocation(delta);
+				c.move();
+			}
 		}
 		
 		Iterator<Bullet> i = bullets.iterator();
 		while(i.hasNext()){
 			Bullet b = i.next();
 			b.getNewLocation(delta);
-			b.move();
+			if(b.getShooterId() == hero.getId()){
+				b.checkCollisions(creatures);
+			}else{
+				if(b.collides(hero)){
+					hero.takeDamage(b.getDamage());
+					b.setDestroy(true);
+				}
+			}
 			if(b.destroy()){
 				i.remove();
+			}else{
+				b.move();
 			}
-		}		
+		}
 		
 		
 		// Camera movement logic
@@ -312,11 +344,11 @@ public class Board extends JPanel {
 	public void mobShoot(Character mob, int dir) {
 		Bullet shot;
 		if(dir == 1){
-			shot = new Bullet(objectId, mob.getX() + mob.getWidth(), mob.getY() + 10, 10, 10, 5, mob.getId(), 600);
-			shot.setVX(400);
+			shot = new Bullet(objectId, mob.getX() + mob.getWidth(), mob.getY() + 10, 10, 10, 5, mob.getId(), 400);
+			shot.setVX(300);
 		}else{
-			shot = new Bullet(objectId, mob.getX(), mob.getY() + 10, 10, 10, 5, mob.getId(), 600);
-			shot.setVX(-400);
+			shot = new Bullet(objectId, mob.getX(), mob.getY() + 10, 10, 10, 5, mob.getId(), 400);
+			shot.setVX(-300);
 		}
 			
 		shot.setColor(Color.red);
@@ -348,11 +380,12 @@ public class Board extends JPanel {
 		for(Character c : creatures){
 			c.draw(g, camXOffset);
 		}
-//		for(GameObject go : objects){
-//			go.draw(g);
-//		}
+		
+		g.drawString("Health: " + hero.getHealth(), windowWidth/8, windowHeight/8);
+		g.drawString("Score: " + score, windowWidth*7/8-50, windowHeight/8);
 	}
 	
+	// Creates world and the objects
 	private void initBoard() {
 //		System.out.println(windowHeight);
 //		System.out.println(windowWidth);
@@ -361,7 +394,7 @@ public class Board extends JPanel {
 		grounds.add(floor);
 		objectId++;
 		
-		hero = new Character(objectId, 50, 50, 83, 80, 40, "Hero");
+		hero = new Character(objectId, 50, 50, 83, 80, 20, "Hero");
 		hero.setX(camX - hero.getWidth()/2);
 		hero.setAY(2000);
 		hero.setHero();
