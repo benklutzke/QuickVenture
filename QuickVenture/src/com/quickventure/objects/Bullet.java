@@ -44,12 +44,14 @@ public class Bullet extends GameObject{
 		this.destroy = b;
 	}
 	
-	public void checkCollisions(ArrayList<Character> creatures){
+	public boolean checkCollisions(ArrayList<Character> creatures){
 		for(Character c : creatures){
 			if(collides(c)){
 				c.takeDamage(this.damage);
 				this.destroy = true;
+				return true;
 			}
 		}
+		return false;
 	}
 }

@@ -13,9 +13,17 @@ import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -37,6 +45,7 @@ public class Board extends JPanel {
 	private final int TARGET_FPS = 80;
 	private final long OPTIMAL_TIME = 1000000000 / TARGET_FPS;
 	private boolean gameRunning = false;
+	private double gain = 0.08; // Game volume control
 	private int lastFpsTime = 0;
 	private int fps = 0;
 	private int windowWidth = 0;
@@ -147,6 +156,8 @@ public class Board extends JPanel {
 		initBoard();
 		animation.start();
 		
+		// Start background music
+		
 		while(gameRunning){
 			long now = System.nanoTime();
 			long updateLength = now - lastLoopTime;
@@ -199,6 +210,12 @@ public class Board extends JPanel {
 		if(up && hero.isGrounded()){
 			hero.setVY(hero.getVY() - 600); // Jump
 			hero.setGrounded(false);
+			// Play Hero Jump Sound
+			try {
+				playSound("hero_jump.wav");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		if(down && !hero.isGrounded()){
 			hero.setVY(hero.getVY() + 30); // Speeds up fall
@@ -285,6 +302,12 @@ public class Board extends JPanel {
 				hero.setNewLocation(-1, o.getY()-hero.getHeight());
 				hero.setGrounded(true);
 				hero.setVY(0);
+				// Play Hero Lands Sound
+				try {
+					playSound("hero_land.wav");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 			if(hero.getNX() <= 0){
 				hero.setNewLocation(0, -1);
@@ -301,6 +324,12 @@ public class Board extends JPanel {
 				ic.remove();
 				score += 5;
 				hero.takeDamage(-10);
+				// Play Mob Death Sound
+				try {
+					playSound("mob_death.wav");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}else{
 				c.getNewLocation(delta);
 				c.move();
@@ -312,11 +341,24 @@ public class Board extends JPanel {
 			Bullet b = ib.next();
 			b.getNewLocation(delta);
 			if(b.getShooterId() == hero.getId()){
-				b.checkCollisions(creatures);
+				if(b.checkCollisions(creatures)){
+					// Play Mob Hit Sound
+					try {
+						playSound("mob_hit.wav");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 			}else{
 				if(b.collides(hero)){
 					hero.takeDamage(b.getDamage());
 					b.setDestroy(true);
+					// Play Hero Hit Sound
+					try {
+						playSound("hero_hit.wav");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 			if(b.destroy()){
@@ -332,6 +374,12 @@ public class Board extends JPanel {
 			if(i.collides(hero)){
 				i.effect(hero);
 				ii.remove();
+				// Play Hero Mushroom Sound
+				try {
+					playSound("hero_mushroom.wav");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -348,6 +396,12 @@ public class Board extends JPanel {
 		
 		if(hero.getHealth() <= 0){
 			gameRunning = false;
+			// Play Hero Death Sound
+			try {
+				playSound("hero_death.wav");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 		// Prepare next character animation
@@ -370,6 +424,12 @@ public class Board extends JPanel {
 		
 		bullets.add(shot);
 		objectId++;
+		// Play Hero Shot Sound
+		try {
+			playSound("hero_shoot.wav");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void mobShoot(Character mob, int dir) {
@@ -386,6 +446,12 @@ public class Board extends JPanel {
 		
 		bullets.add(shot);
 		objectId++;
+		// Play Mob Shot Sound
+		try {
+			playSound("mob_shoot.wav");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -471,5 +537,16 @@ public class Board extends JPanel {
 		up = false;
 		down = false;
 		shoot = false;
+	}
+	
+	private void playSound(String s) throws LineUnavailableException, UnsupportedAudioFileException, IOException{
+		Clip clip = AudioSystem.getClip();
+		File f = new File("sounds/" + s);
+		AudioInputStream a = AudioSystem.getAudioInputStream(f);
+		clip.open(a);
+		FloatControl volume = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+		float dB = (float) (Math.log(gain) / Math.log(10.0) * 20.0);
+		volume.setValue(dB);
+		clip.start();
 	}
 }

@@ -1,6 +1,7 @@
 package com.quickventure;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -28,6 +29,7 @@ public class Game extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		gameBoard.setSize(getWidth()-14, getHeight()-37); // Not universal, not sure how else to do it.
+		gameBoard.setBackground(new Color(204,250,250));
 		gameBoard.runGameLoop();
 	}
 	
