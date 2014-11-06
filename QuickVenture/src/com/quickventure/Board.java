@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.quickventure.images.Animation;
@@ -168,6 +169,13 @@ public class Board extends JPanel {
 				Thread.sleep( (lastLoopTime-System.nanoTime() + OPTIMAL_TIME)/1000000 );
 			}catch(Exception e){};
 		}
+		int n = JOptionPane.showConfirmDialog(this, "You have died. Do you want to restart?", null, JOptionPane.YES_NO_OPTION);
+		if(n == 0){
+			reset();
+			runGameLoop();
+		}else{
+			System.exit(0);
+		}
 	}
 	
 	private void gameUpdate(double delta) {
@@ -249,14 +257,16 @@ public class Board extends JPanel {
 		
 		// Creature logic
 		for(Character c : creatures){
-			if(Math.abs(hero.getX() - c.getX()) <= windowWidth/2 + 50){ // Mob is close enough to see hero
+			if(c.collides(hero)){
+				hero.setHealth(0);
+			}else if(Math.abs(hero.getX() - c.getX()) <= windowWidth/2 + 50){ // Mob is close enough to see hero
 				if(c.chase()){ // Mob half second delay
 					int dir;
 					if(hero.getX() < c.getX()){ // Hero is to the left of mob
-						c.setVX(c.getVX() - 10);
+						c.setVX(c.getVX() - 20);
 						dir = -1;
 					}else{ // Hero is to the right of mob
-						c.setVX(c.getVX() + 10); 
+						c.setVX(c.getVX() + 20); 
 						dir = 1;
 					}
 					mobShoot(c, dir);
@@ -297,9 +307,9 @@ public class Board extends JPanel {
 			}
 		}
 		
-		Iterator<Bullet> i = bullets.iterator();
-		while(i.hasNext()){
-			Bullet b = i.next();
+		Iterator<Bullet> ib = bullets.iterator();
+		while(ib.hasNext()){
+			Bullet b = ib.next();
 			b.getNewLocation(delta);
 			if(b.getShooterId() == hero.getId()){
 				b.checkCollisions(creatures);
@@ -310,9 +320,18 @@ public class Board extends JPanel {
 				}
 			}
 			if(b.destroy()){
-				i.remove();
+				ib.remove();
 			}else{
 				b.move();
+			}
+		}
+		
+		Iterator<Item> ii = items.iterator();
+		while(ii.hasNext()){
+			Item i = ii.next();
+			if(i.collides(hero)){
+				i.effect(hero);
+				ii.remove();
 			}
 		}
 		
@@ -325,6 +344,10 @@ public class Board extends JPanel {
 			camX = windowWidth/2;
 		}else if(heroX < camX){
 			camX = heroX;
+		}
+		
+		if(hero.getHealth() <= 0){
+			gameRunning = false;
 		}
 		
 		// Prepare next character animation
@@ -406,15 +429,15 @@ public class Board extends JPanel {
 		grounds.add(floor);
 		objectId++;
 		
-		hero = new Character(objectId, 50, 50, 83, 80, 20, "Hero");
-		hero.setX(camX - hero.getWidth()/2);
+		hero = new Character(objectId, 50, 100, 83, 80, 20, "Hero");
+//		hero.setX(camX - hero.getWidth()/2);
 		hero.setAY(2000);
 		hero.setHero();
 		hero.setAutoFireMode(false);
 		objectId++;
 		
 		// Generates mobs every windowWidth on main ground
-		for(int i = (int)hero.getX() + windowWidth; i < floor.getWidth(); i += windowWidth){
+		for(int i = windowWidth*3/2; i < floor.getWidth(); i += windowWidth){
 			Character c = new Character(objectId, i, floor.getY() - 62, 74, 46, 20, "Mob");
 			c.setImage("troll.png");
 			c.setMaxSpeed(70);
@@ -432,5 +455,21 @@ public class Board extends JPanel {
 			items.add(it);
 			objectId++;
 		}
+	}
+	
+	private void reset(){
+		objectId = 0;
+		grounds.clear();
+		creatures.clear();
+		hero = null;
+		bullets.clear();
+		items.clear();
+		score = 0;
+		hpTimer = 0;
+		left = false;
+		right = false;
+		up = false;
+		down = false;
+		shoot = false;
 	}
 }
