@@ -30,6 +30,7 @@ public class GameObject {
 	private boolean grounded;
 	private Color color;
 	private boolean limited; // Speed limit for guy but not for bullets
+	private boolean crop;
 	private BufferedImage image = null;
 //	private boolean yPGround;
 //	private boolean yNGround;
@@ -51,6 +52,7 @@ public class GameObject {
 		this.ay = 0;
 		this.color = Color.red;
 		this.limited = true;
+		this.crop = false;
 	}
 	
 	public void setX(double x){
@@ -89,7 +91,7 @@ public class GameObject {
 	public void setImage(String s){
 		try {
             image = ImageIO.read(new File("images/" + s));
-            if(image.getHeight() < this.height){
+            if(this.crop){
             	image = image.getSubimage(0, 0, image.getWidth(), this.height);
             }
         } catch (IOException e) {
@@ -99,6 +101,9 @@ public class GameObject {
 	}
 	public void setMaxSpeed(double d){
 		this.maxSpeed = d;
+	}
+	public void setCrop(boolean b){
+		this.crop = b;
 	}
 	
 	public int getId(){
@@ -148,7 +153,7 @@ public class GameObject {
 			int imageWidth = image.getWidth();
 			int imageHeight = image.getHeight();
 			
-			if(imageWidth == this.width){
+			if(!crop){
 				g.drawImage(image, (int)this.x - xOffset, (int)this.y, this.width, this.height, null);
 			}else{
 				for(int i = (int)this.x; i < (int)this.x + this.width; i += imageWidth){

@@ -24,6 +24,7 @@ import com.quickventure.images.Sprite;
 import com.quickventure.objects.Bullet;
 import com.quickventure.objects.GameObject;
 import com.quickventure.objects.Character;
+import com.quickventure.objects.Item;
 
 public class Board extends JPanel {
 	
@@ -47,6 +48,7 @@ public class Board extends JPanel {
 	private ArrayList<Character> creatures = new ArrayList<Character>();
 	private Character hero = null;
 	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
+	private ArrayList<Item> items = new ArrayList<Item>();
 	private boolean left = false;
 	private boolean right = false;
 	private boolean up = false;
@@ -247,18 +249,18 @@ public class Board extends JPanel {
 		
 		// Creature logic
 		for(Character c : creatures){
-			if(Math.abs(hero.getX() - c.getX()) <= windowWidth/2 + 150){ // Mob is close enough to see hero
-				int dir;
-				if(hero.getX() < c.getX()){ // Hero is to the left of mob
-					c.setVX(c.getVX() - 10);
-					dir = -1;
-				}else{
-					c.setVX(c.getVX() + 10);
-					dir = 1;
-				}
-				if(c.shoot(true)){
+			if(Math.abs(hero.getX() - c.getX()) <= windowWidth/2 + 50){ // Mob is close enough to see hero
+				if(c.chase()){ // Mob half second delay
+					int dir;
+					if(hero.getX() < c.getX()){ // Hero is to the left of mob
+						c.setVX(c.getVX() - 10);
+						dir = -1;
+					}else{ // Hero is to the right of mob
+						c.setVX(c.getVX() + 10); 
+						dir = 1;
+					}
 					mobShoot(c, dir);
-				}
+				}				
 			}else{
 				c.setVX(0);
 				c.resetShots();
@@ -273,6 +275,10 @@ public class Board extends JPanel {
 				hero.setNewLocation(-1, o.getY()-hero.getHeight());
 				hero.setGrounded(true);
 				hero.setVY(0);
+			}
+			if(hero.getNX() <= 0){
+				hero.setNewLocation(0, -1);
+				hero.setVX(0);
 			}
 		}
 		hero.move();
@@ -313,10 +319,12 @@ public class Board extends JPanel {
 		
 		// Camera movement logic
 		int heroX = (int)hero.getX() + hero.getWidth()/2;
-		if(heroX > camX + 50){
-			camX = heroX - 50;
-		}else if(heroX < camX - 50){
-			camX = heroX + 50;
+		if(heroX > camX){
+			camX = heroX;
+		}else if(heroX < windowWidth/2){
+			camX = windowWidth/2;
+		}else if(heroX < camX){
+			camX = heroX;
 		}
 		
 		// Prepare next character animation
@@ -328,10 +336,10 @@ public class Board extends JPanel {
 	public void heroShoot() { 
 		Bullet shot;
 		if(direction == "right"){
-			shot = new Bullet(objectId, hero.getX() + hero.getWidth() - 5, hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
+			shot = new Bullet(objectId, hero.getX() + hero.getWidth() - 5, hero.getY() + 33, 10, 10, 5, hero.getId(), windowWidth/2 - 50);
 			shot.setVX(700);
 		}else{
-			shot = new Bullet(objectId, hero.getX(), hero.getY() + 33, 10, 10, 5, hero.getId(), 600);
+			shot = new Bullet(objectId, hero.getX(), hero.getY() + 33, 10, 10, 5, hero.getId(), windowWidth/2 - 50);
 			shot.setVX(-700);
 		}
 			
@@ -344,10 +352,10 @@ public class Board extends JPanel {
 	public void mobShoot(Character mob, int dir) {
 		Bullet shot;
 		if(dir == 1){
-			shot = new Bullet(objectId, mob.getX() + mob.getWidth(), mob.getY() + 10, 10, 10, 5, mob.getId(), 400);
+			shot = new Bullet(objectId, mob.getX() + mob.getWidth(), mob.getY() + 10, 10, 10, 5, mob.getId(), windowWidth/3);
 			shot.setVX(300);
 		}else{
-			shot = new Bullet(objectId, mob.getX(), mob.getY() + 10, 10, 10, 5, mob.getId(), 400);
+			shot = new Bullet(objectId, mob.getX(), mob.getY() + 10, 10, 10, 5, mob.getId(), windowWidth/3);
 			shot.setVX(-300);
 		}
 			
@@ -380,6 +388,9 @@ public class Board extends JPanel {
 		for(Character c : creatures){
 			c.draw(g, camXOffset);
 		}
+		for(Item i : items){
+			i.draw(g, camXOffset);
+		}
 		
 		g.drawString("Health: " + hero.getHealth(), windowWidth/8, windowHeight/8);
 		g.drawString("Score: " + score, windowWidth*7/8-50, windowHeight/8);
@@ -389,7 +400,8 @@ public class Board extends JPanel {
 	private void initBoard() {
 //		System.out.println(windowHeight);
 //		System.out.println(windowWidth);
-		GameObject floor = new GameObject(objectId, 0-windowWidth/2, windowHeight-50, 50, windowWidth*5);
+		GameObject floor = new GameObject(objectId, 0-windowWidth/2, windowHeight-50, 50, windowWidth*20);
+		floor.setCrop(true);
 		floor.setImage("ground.png");
 		grounds.add(floor);
 		objectId++;
@@ -411,5 +423,14 @@ public class Board extends JPanel {
 			objectId++;
 		}
 		
+		// Generates a magic mushroom every windowWidth on the main ground
+		for(int i = windowWidth; i < floor.getWidth(); i += windowWidth){
+			Item it = new Item(objectId, i, floor.getY() - 40, 40, 40, "heal");
+			it.setImage("mushroom.png");
+			it.setMaxSpeed(0);
+			
+			items.add(it);
+			objectId++;
+		}
 	}
 }

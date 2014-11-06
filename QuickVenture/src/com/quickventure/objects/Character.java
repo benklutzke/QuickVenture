@@ -9,6 +9,7 @@ public class Character extends GameObject {
 	private int shootTimer;
 	private int shootDelay;
 	private int autoShots;
+	private int moveDelay;
 	private boolean autoFire;
 	private boolean isHero;
 
@@ -24,6 +25,7 @@ public class Character extends GameObject {
 		this.autoShots = 0;
 		this.autoFire = true;
 		this.isHero = false;
+		this.moveDelay = 0;
 	}
 	
 	public void setHealth(int h){
@@ -82,12 +84,22 @@ public class Character extends GameObject {
 		return false;
 	}
 	
+	public boolean chase(){
+		if(moveDelay < TARGET_FPS / 2){ // Waits half a second before chasing
+			moveDelay++;
+			return false;
+		}else{
+			return shoot(true);
+		}
+	}
+	
 	public void resetShots(){
 		this.isShooting = false;
 		this.shootTimer = 0;
 		this.shootDelay = 0;
 		this.autoShots = 0;
 		this.autoFire = true;
+		this.moveDelay = 0;
 	}
 	
 	public int takeDamage(int d){
