@@ -22,6 +22,8 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
@@ -167,8 +169,8 @@ public class Board extends JPanel {
 //			fps++;
 //			// Prints out number of game updates in a second
 //			if(lastFpsTime >= 1000000000) {
-//				System.out.println("FPS: " + fps + ", camX: " + camX);
-//				System.out.println("Delta: " + delta);
+//				System.out.println("FPS: " + fps);
+////				System.out.println("Delta: " + delta);
 //				lastFpsTime = 0;
 //				fps = 0;
 //			}
@@ -478,16 +480,27 @@ public class Board extends JPanel {
 		}
 		
 		// Draws other stuff
-		for(Bullet b : bullets){
+		Iterator<Bullet> ib = bullets.iterator();
+		while(ib.hasNext()){
+			Bullet b = ib.next();
 			b.draw(g, camXOffset);
 		}
-		for(GameObject o : grounds){
+		
+		Iterator<GameObject> ig = grounds.iterator();
+		while(ig.hasNext()){
+			GameObject o = ig.next();
 			o.draw(g, camXOffset);
 		}
-		for(Character c : creatures){
+		
+		Iterator<Character> ic = creatures.iterator();
+		while(ic.hasNext()){
+			Character c = ic.next();
 			c.draw(g, camXOffset);
 		}
-		for(Item i : items){
+		
+		Iterator<Item> ii = items.iterator();
+		while(ii.hasNext()){
+			Item i = ii.next();
 			i.draw(g, camXOffset);
 		}
 		
@@ -557,6 +570,16 @@ public class Board extends JPanel {
 		FloatControl volume = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
 		float dB = (float) (Math.log(gain) / Math.log(10.0) * 20.0);
 		volume.setValue(dB);
+		
+		// Close line when finished playing
+		clip.addLineListener(new LineListener() {
+            public void update(LineEvent event) {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    event.getLine().close();
+                }
+            }
+        });
+		
 		clip.start();
 	}
 }
