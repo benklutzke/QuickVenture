@@ -14,7 +14,7 @@ public class Item extends GameObject {
 	
 	public void effect(Character c){
 		if(this.effect == "heal"){
-			c.takeDamage(-10);
+			c.takeDamage(-5);
 		}
 	}
 }
