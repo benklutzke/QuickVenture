@@ -2,7 +2,6 @@ package com.quickventure.objects;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +19,6 @@ public class GameObject {
 	private double y;		// Current y coordinate
 	private double nx;		// Next Frame x coordinate
 	private double ny;		// Next Frame y coordinate
-	private Point newLoc;
 	private int height;
 	private int width;
 	private double vx;		// Velocity x component
@@ -43,7 +41,6 @@ public class GameObject {
 		this.y = y;
 		this.nx = x;
 		this.ny = y;
-		this.newLoc = null;
 		this.height = h;
 		this.width = w;
 		this.vx = 0;

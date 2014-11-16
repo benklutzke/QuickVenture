@@ -1,17 +1,9 @@
 package com.quickventure;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +18,6 @@ import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -46,12 +37,12 @@ public class Board extends JPanel {
 	private final long OPTIMAL_TIME = 1000000000 / TARGET_FPS;
 	private boolean gameRunning = false;
 	private double gain = 0.08; // Game volume control
-	private int lastFpsTime = 0;
-	private int fps = 0;
+//	private int lastFpsTime = 0;
+//	private int fps = 0;
 	private int windowWidth = 0;
 	private int windowHeight = 0;
 	private int camX = 0;
-	private int camY = 0;
+//	private int camY = 0;
 	
 	private int objectId = 0;
 	private ArrayList<GameObject> grounds = new ArrayList<GameObject>();
@@ -153,7 +144,7 @@ public class Board extends JPanel {
 		windowWidth = getWidth();
 		windowHeight = getHeight();
 		camX = windowWidth / 2;
-		camY = windowWidth / 2;
+//		camY = windowWidth / 2;
 		initBoard();
 		animation.start();
 		

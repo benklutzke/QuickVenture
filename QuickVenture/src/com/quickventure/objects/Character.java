@@ -7,7 +7,6 @@ public class Character extends GameObject {
 	private String name;
 	private boolean isShooting;
 	private int shootTimer;
-	private int shootDelay;
 	private int autoShots;
 	private int moveDelay;
 	private boolean autoFire;
@@ -21,7 +20,6 @@ public class Character extends GameObject {
 		this.name = n;
 		this.isShooting = false;
 		this.shootTimer = 0;
-		this.shootDelay = 0;
 		this.autoShots = 0;
 		this.autoFire = true;
 		this.isHero = false;
@@ -96,7 +94,6 @@ public class Character extends GameObject {
 	public void resetShots(){
 		this.isShooting = false;
 		this.shootTimer = 0;
-		this.shootDelay = 0;
 		this.autoShots = 0;
 		this.autoFire = true;
 		this.moveDelay = 0;
