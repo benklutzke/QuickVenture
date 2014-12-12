@@ -30,6 +30,8 @@ public class GameObject {
 	private boolean limited; // Speed limit for guy but not for bullets
 	private boolean crop;
 	private BufferedImage image = null;
+	private BufferedImage topImage = null;
+	private BufferedImage botImage = null;
 //	private boolean yPGround;
 //	private boolean yNGround;
 //	private boolean xPGround;
@@ -89,7 +91,9 @@ public class GameObject {
 		try {
             image = ImageIO.read(new File("images/" + s));
             if(this.crop){
-            	image = image.getSubimage(0, 0, image.getWidth(), this.height);
+//            	image = image.getSubimage(0, 0, image.getWidth(), this.height);
+            	topImage = image.getSubimage(0, 0, image.getWidth(), image.getHeight()/2);
+            	botImage = image.getSubimage(0, image.getHeight()/2, image.getWidth(), image.getHeight()/2);
             }
         } catch (IOException e) {
         	System.out.println(s);
@@ -147,21 +151,55 @@ public class GameObject {
 			g.fillRect((int)this.x - xOffset, (int)this.y, this.width, this.height);
 			g.setColor(co);
 		}else{
+
+//			g.drawImage(topImage, 100, 100, topImage.getWidth(), topImage.getHeight(), null);
+//			g.drawImage(botImage, 200, 200, botImage.getWidth(), botImage.getHeight(), null);
+			
 			int imageWidth = image.getWidth();
 			int imageHeight = image.getHeight();
 			
 			if(!crop){
 				g.drawImage(image, (int)this.x - xOffset, (int)this.y, this.width, this.height, null);
 			}else{
-				for(int i = (int)this.x; i < (int)this.x + this.width; i += imageWidth){
-					if(i + imageWidth > this.width){
-						imageWidth = this.width - i;
-						BufferedImage temp = image.getSubimage(0, 0, imageWidth, imageHeight);
-						g.drawImage(temp, i - xOffset, (int)this.y, imageWidth, this.height, null);
+				for(int i = (int)this.y; i < (int)this.y + this.height; i += imageHeight/2){
+					BufferedImage temp = null;
+					int toHeight = imageHeight/2;
+					
+					if(i == (int)this.y){ // Very top of ground, draw topImage
+						temp = topImage;
 					}else{
-						g.drawImage(image, i - xOffset, (int)this.y, imageWidth, this.height, null);
+						temp = botImage;
 					}
+					
+					if(i + toHeight > (int)this.y + this.height){
+						toHeight = (int)this.y + this.height - i;
+					}
+					
+					for(int j = (int)this.x; j < (int)this.x + this.width; j += imageWidth){
+						
+						int toWidth = imageWidth;
+						
+						if(j + toWidth > (int)this.x + this.width){
+							toWidth = (int)this.x + this.width - j;
+						}
+						
+						temp = temp.getSubimage(0, 0, toWidth, toHeight);
+						g.drawImage(temp, j - xOffset, i, toWidth, toHeight, null);
+						
+					}
+					
 				}
+				
+				
+//				for(int i = (int)this.x; i < (int)this.x + this.width; i += imageWidth){
+//					if(i + imageWidth > this.width){
+//						imageWidth = this.width - i;
+//						BufferedImage temp = image.getSubimage(0, 0, imageWidth, imageHeight);
+//						g.drawImage(temp, i - xOffset, (int)this.y, imageWidth, this.height, null);
+//					}else{
+//						g.drawImage(image, i - xOffset, (int)this.y, imageWidth, this.height, null);
+//					}
+//				}
 			}
 		}
 	}

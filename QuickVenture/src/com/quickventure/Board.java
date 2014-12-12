@@ -5,7 +5,10 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,6 +46,7 @@ public class Board extends JPanel {
 	private int windowHeight = 0;
 	private int camX = 0;
 //	private int camY = 0;
+	private String mapFile = null;
 	
 	private int objectId = 0;
 	private ArrayList<GameObject> grounds = new ArrayList<GameObject>();
@@ -145,7 +149,11 @@ public class Board extends JPanel {
 		windowHeight = getHeight();
 		camX = windowWidth / 2;
 //		camY = windowWidth / 2;
-		initBoard();
+		if(mapFile == null){
+			initDefaultBoard();
+		}else{
+			initBoard();
+		}
 		animation.start();
 		
 		// Start background music
@@ -166,7 +174,9 @@ public class Board extends JPanel {
 //				fps = 0;
 //			}
 			
-			gameUpdate(delta);
+			if(hero != null){
+				gameUpdate(delta);
+			}
 			
 			try{
 				Thread.sleep( (lastLoopTime-System.nanoTime() + OPTIMAL_TIME)/1000000 );
@@ -459,9 +469,12 @@ public class Board extends JPanel {
 	
 	@Override
 	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		if(hero == null){
+			return;
+		}
 		int camXOffset = camX - windowWidth/2;
 		
-		super.paintComponent(g);
 		
 		// Draws hero
 		if(direction == "right"){
@@ -501,7 +514,7 @@ public class Board extends JPanel {
 	}
 	
 	// Creates world and the objects
-	private void initBoard() {
+	private void initDefaultBoard() {
 		GameObject floor = new GameObject(objectId, 0-windowWidth/2, windowHeight-50, 50, windowWidth*20);
 		floor.setCrop(true);
 		floor.setImage("ground.png");
@@ -509,7 +522,6 @@ public class Board extends JPanel {
 		objectId++;
 		
 		hero = new Character(objectId, 50, 100, 83, 80, 20, "Hero");
-//		hero.setX(camX - hero.getWidth()/2);
 		hero.setAY(2000);
 		hero.setHero();
 		hero.setAutoFireMode(false);
@@ -534,6 +546,50 @@ public class Board extends JPanel {
 			items.add(it);
 			objectId++;
 		}
+	}
+	
+	private void analyzeMapLine(String line){
+		String[] obj = line.split(", ");
+		if(obj[0].equals("type")){
+			return;
+		}else if(obj[0].equals("ground")){
+			GameObject floor = new GameObject(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), Integer.parseInt(obj[3]), Integer.parseInt(obj[4]));
+			floor.setCrop(true);
+			floor.setImage("ground.png");
+			grounds.add(floor);
+			objectId++;
+		}else if(obj[0].equals("hero")){
+			hero = new Character(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), Integer.parseInt(obj[3]), Integer.parseInt(obj[4]), 20, "Hero");
+			hero.setAY(2000);
+			hero.setHero();
+			hero.setAutoFireMode(false);
+			objectId++;
+		}
+		
+		
+		
+	}
+	
+	private void initBoard(){
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(mapFile));
+			String line = br.readLine();
+			
+			while(line != null){
+				analyzeMapLine(line);
+				line = br.readLine();
+			}
+			br.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	public void setMapFile(String s){
+		mapFile = s;
 	}
 	
 	private void reset(){
