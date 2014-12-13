@@ -52,6 +52,7 @@ public class Board extends JPanel {
 	private ArrayList<GameObject> grounds = new ArrayList<GameObject>();
 	private ArrayList<Character> creatures = new ArrayList<Character>();
 	private Character hero = null;
+	private GameObject curGround = null;
 	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 	private ArrayList<Item> items = new ArrayList<Item>();
 	private boolean left = false;
@@ -210,8 +211,9 @@ public class Board extends JPanel {
 			}
 		}
 		if(up && hero.isGrounded()){
-			hero.setVY(hero.getVY() - 600); // Jump
+			hero.setVY(hero.getVY() - 800); // Jump
 			hero.setGrounded(false);
+			curGround = null;
 			// Play Hero Jump Sound
 			try {
 				playSound("hero_jump.wav");
@@ -309,23 +311,54 @@ public class Board extends JPanel {
 		//Update objects		
 		hero.getNewLocation(delta);
 		//Ground collision detection
-		for(GameObject o : grounds){
-			if(!hero.isGrounded() && hero.collides(o)){
-				hero.setNewLocation(-1, o.getY()-hero.getHeight());
-				hero.setGrounded(true);
-				hero.setVY(0);
-				// Play Hero Lands Sound
-				try {
-					playSound("hero_land.wav");
-				} catch (Exception e) {
-					e.printStackTrace();
+		if(!hero.isGrounded()){
+			for(GameObject o : grounds){
+				int result = hero.checkCollision(o);
+				if(result == 0){
+					continue;
+				// Need to determine how collision happened
+				}else if(result == 1){
+					// Hero collides to top -> Lands
+					hero.setNewLocation(-1, o.getY() - hero.getHeight());
+					hero.setGrounded(true);
+					curGround = o;
+					hero.setVY(0);
+					// Play Hero Lands Sound
+					try {
+						playSound("hero_land.wav");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}else if(result == 2){
+					// Hero collides from bottom -> Bumps head; VY = 0
+					hero.setNewLocation(-1, o.getY() + o.getHeight());
+					hero.setVY(0);					
+				}else if(result == 3){
+					// Hero collides right side -> Smashes face; VX = 0
+					hero.setNewLocation(o.getX() - hero.getWidth(), -1);
+					hero.setVX(0);					
+				}else{
+					// Hero collides left side
+					hero.setNewLocation(o.getX() + o.getWidth(), -1);
+					hero.setVX(0);					
 				}
 			}
-			if(hero.getNX() <= 0){
-				hero.setNewLocation(0, -1);
-				hero.setVX(0);
+		}else if(curGround != null){
+			if(hero.getNX() + hero.getWidth() < curGround.getX() || hero.getNX() > curGround.getX() + curGround.getWidth()){
+				// Moved past end of curground -> fall
+				hero.setGrounded(false);
+				curGround = null;
 			}
 		}
+		
+		if(hero.getNX() <= 0){
+			hero.setNewLocation(0, -1);
+			hero.setVX(0);
+		}
+		if(hero.getNY() + hero.getHeight() >= windowHeight){
+			hero.setHealth(0);
+		}
+		
 		hero.move();
 		
 		Iterator<Character> ic = creatures.iterator();
@@ -410,11 +443,11 @@ public class Board extends JPanel {
 		if(hero.getHealth() <= 0){
 			gameRunning = false;
 			// Play Hero Death Sound
-			try {
-				playSound("hero_death.wav");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+//			try {
+//				playSound("hero_death.wav");
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
 		}
 		
 		// Prepare next character animation
@@ -426,10 +459,10 @@ public class Board extends JPanel {
 	public void heroShoot() { 
 		Bullet shot;
 		if(direction == "right"){
-			shot = new Bullet(objectId, hero.getX() + hero.getWidth() - 5, hero.getY() + 33, 10, 10, 5, hero.getId(), windowWidth/2 - 50);
+			shot = new Bullet(objectId, hero.getDrawX() + hero.getDrawWidth() - 5, hero.getDrawY() + 33, 10, 10, 5, hero.getId(), windowWidth/2 - 50);
 			shot.setVX(700);
 		}else{
-			shot = new Bullet(objectId, hero.getX(), hero.getY() + 33, 10, 10, 5, hero.getId(), windowWidth/2 - 50);
+			shot = new Bullet(objectId, hero.getDrawX(), hero.getDrawY() + 33, 10, 10, 5, hero.getId(), windowWidth/2 - 50);
 			shot.setVX(-700);
 		}
 			
@@ -478,9 +511,9 @@ public class Board extends JPanel {
 		
 		// Draws hero
 		if(direction == "right"){
-			g.drawImage(animation.getSprite(), (int)hero.getX() - camXOffset, (int)hero.getY(), hero.getWidth(), hero.getHeight()+11, null);
+			g.drawImage(animation.getSprite(), (int)hero.getDrawX() - camXOffset, (int)hero.getDrawY(), hero.getDrawWidth(), hero.getDrawHeight()+11, null);
 		}else{
-			g.drawImage(animation.getSprite(), (int)hero.getX()+hero.getWidth() - camXOffset, (int)hero.getY(), -1*hero.getWidth(), hero.getHeight()+11, null);
+			g.drawImage(animation.getSprite(), (int)hero.getDrawX()+hero.getDrawWidth() - camXOffset, (int)hero.getDrawY(), -1*hero.getDrawWidth(), hero.getDrawHeight()+11, null);
 		}
 		
 		// Draws other stuff

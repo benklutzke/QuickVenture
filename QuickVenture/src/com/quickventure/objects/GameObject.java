@@ -15,12 +15,12 @@ public class GameObject {
 	private double maxSpeed = 200;
 	
 	private int id;
-	private double x;		// Current x coordinate
-	private double y;		// Current y coordinate
-	private double nx;		// Next Frame x coordinate
-	private double ny;		// Next Frame y coordinate
-	private int height;
-	private int width;
+	protected double x;		// Current x coordinate
+	protected double y;		// Current y coordinate
+	protected double nx;		// Next Frame x coordinate
+	protected double ny;		// Next Frame y coordinate
+	protected int height;
+	protected int width;
 	private double vx;		// Velocity x component
 	private double vy;		// Velocity y component
 	private double ax;		// Acceleration x component

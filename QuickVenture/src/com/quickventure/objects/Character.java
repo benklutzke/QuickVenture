@@ -11,6 +11,10 @@ public class Character extends GameObject {
 	private int moveDelay;
 	private boolean autoFire;
 	private boolean isHero;
+	private double drawX;
+	private double drawY;
+	private int drawWidth;
+	private int drawHeight;
 
 	private int autoFireRate = 40; // Number of frames delayed between each shot.
 	
@@ -24,6 +28,10 @@ public class Character extends GameObject {
 		this.autoFire = true;
 		this.isHero = false;
 		this.moveDelay = 0;
+		this.drawX = x;
+		this.drawY = y;
+		this.drawWidth = w;
+		this.drawHeight = h;
 	}
 	
 	public void setHealth(int h){
@@ -32,16 +40,25 @@ public class Character extends GameObject {
 	public void setAutoFireMode(boolean b){
 		this.autoFire = b;
 	}
-	public void setHero(){
-		this.isHero = true;
-		this.autoFireRate /= 2;
-	}
 	
 	public String getName(){
 		return this.name;
 	}
 	public int getHealth(){
 		return this.health;
+	}
+	
+	public double getDrawX(){
+		return this.drawX;
+	}
+	public double getDrawY(){
+		return this.drawY;
+	}
+	public int getDrawWidth(){
+		return this.drawWidth;
+	}
+	public int getDrawHeight(){
+		return this.drawHeight;
 	}
 	
 	public boolean shoot(boolean shoot) {
@@ -105,5 +122,66 @@ public class Character extends GameObject {
 			this.health = this.MAX_HEALTH;
 		
 		return this.health;
+	}
+	
+	public int checkCollision(GameObject o){
+		// 0 -> does not collide
+		// 1 -> feet collide
+		// 2 -> head collides
+		// 3 -> right collides
+		// 4 -> left collides
+		
+		if(this.ny + this.height >= o.getY() && this.ny <= o.getY() + o.getHeight() &&
+		   this.nx + this.width  >= o.getX() && this.nx <= o.getX() + o.getWidth()){
+			// Collides
+			
+			if(this.y + this.height < o.getY()){
+				// Previous y was higher -> fell on object
+				return 1;
+			}else if(this.y > o.getY() + o.getHeight()){
+				// Previous y was lower -> hit head
+				return 2;
+			}else if(this.x + this.width < o.getX()){
+				// Previous x was lower -> right side collides
+				return 3;
+			}else if(this.x > o.getX() + o.getWidth()){
+				// Previous x was higher -> left side collides
+				return 4;
+			}else{
+				// Shouldn't be there... just fall through
+				return 0;
+			}
+			
+		}else{
+			return 0;
+		}		
+	}
+	
+	public boolean isOn(GameObject o){
+		if(this.x + this.width >= o.getX() && this.x < o.getX() + o.getHeight()){
+			double v = o.getY() - (this.y + this.height);
+			if(v <= 1 && v >= -1){
+				return true;
+			}
+		}
+		return false;		
+	}
+
+	public void setHero(){
+		this.isHero = true;
+		this.autoFireRate /= 2;
+		this.x += 20;
+		this.y += 20;
+		this.width -= 40;
+		this.height -= 20;
+	}
+	
+	public void move(){
+		if(this.isHero){
+			this.drawX = this.nx - 20;
+			this.drawY = this.ny - 20;
+		}
+		this.x = this.nx;
+		this.y = this.ny;
 	}
 }
