@@ -32,6 +32,8 @@ public class GameObject {
 	private BufferedImage image = null;
 	private BufferedImage topImage = null;
 	private BufferedImage botImage = null;
+	private String type;
+	private boolean gas;
 //	private boolean yPGround;
 //	private boolean yNGround;
 //	private boolean xPGround;
@@ -52,6 +54,8 @@ public class GameObject {
 		this.color = Color.red;
 		this.limited = true;
 		this.crop = false;
+		this.type = "normal";
+		this.gas = false;
 	}
 	
 	public void setX(double x){
@@ -105,6 +109,18 @@ public class GameObject {
 	}
 	public void setCrop(boolean b){
 		this.crop = b;
+	}
+	public void setType(String s){
+		this.type = s;
+	}
+	public String getType(){
+		return this.type;
+	}
+	public void setGas(boolean b){
+		this.gas = b;
+	}
+	public boolean getGas(){
+		return this.gas;
 	}
 	
 	public int getId(){
@@ -187,19 +203,7 @@ public class GameObject {
 						g.drawImage(temp, j - xOffset, i, toWidth, toHeight, null);
 						
 					}
-					
 				}
-				
-				
-//				for(int i = (int)this.x; i < (int)this.x + this.width; i += imageWidth){
-//					if(i + imageWidth > this.width){
-//						imageWidth = this.width - i;
-//						BufferedImage temp = image.getSubimage(0, 0, imageWidth, imageHeight);
-//						g.drawImage(temp, i - xOffset, (int)this.y, imageWidth, this.height, null);
-//					}else{
-//						g.drawImage(image, i - xOffset, (int)this.y, imageWidth, this.height, null);
-//					}
-//				}
 			}
 		}
 	}

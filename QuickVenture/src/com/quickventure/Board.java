@@ -60,10 +60,12 @@ public class Board extends JPanel {
 	private boolean up = false;
 	private boolean down = false;
 	private boolean shoot = false;
+	private boolean shootEnabled = true;
 	private String direction = "right";
 	private int score = 0;
 	private int hpTimer1 = 0; // Standing
 	private int hpTimer2 = 0; // Walking
+	private int gasTimer = 0;
 		
 	// Animations
 	private BufferedImage[] standing_bi = {Sprite.getSprite(0,0), Sprite.getSprite(1,0), Sprite.getSprite(2,0), Sprite.getSprite(3,0), Sprite.getSprite(4,0), Sprite.getSprite(5,0), Sprite.getSprite(6,0), Sprite.getSprite(7,0)};
@@ -213,6 +215,9 @@ public class Board extends JPanel {
 		if(up && hero.isGrounded()){
 			hero.setVY(hero.getVY() - 800); // Jump
 			hero.setGrounded(false);
+			if(curGround.getType().equals("gas")){
+				curGround.setGas(true);
+			}
 			curGround = null;
 			// Play Hero Jump Sound
 			try {
@@ -226,7 +231,7 @@ public class Board extends JPanel {
 		}	
 		
 		// Shooting logic
-		if(hero.shoot(shoot)){
+		if(shootEnabled && hero.shoot(shoot)){
 			heroShoot();
 		}
 		
@@ -360,6 +365,25 @@ public class Board extends JPanel {
 		}
 		
 		hero.move();
+		
+		// curGround checks
+		if(hero.isGrounded() && curGround != null){
+			if(curGround.getType().equals("explosive")){
+				hero.takeDamage(10);
+				curGround.setType("normal");
+				curGround.setImage("ground.png");
+			}else if(curGround.getType().equals("gas") && curGround.getGas()){
+				if(gasTimer < TARGET_FPS){
+					shootEnabled = false;
+					gasTimer++;
+				}else{
+					shootEnabled = true;
+					gasTimer = 0;
+					curGround.setGas(false);
+				}
+			}
+		}
+		
 		
 		Iterator<Character> ic = creatures.iterator();
 		while(ic.hasNext()){
@@ -589,6 +613,21 @@ public class Board extends JPanel {
 			GameObject floor = new GameObject(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), Integer.parseInt(obj[3]), Integer.parseInt(obj[4]));
 			floor.setCrop(true);
 			floor.setImage("ground.png");
+			grounds.add(floor);
+			objectId++;
+		}else if(obj[0].equals("explode")){
+			GameObject floor = new GameObject(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), Integer.parseInt(obj[3]), Integer.parseInt(obj[4]));
+			floor.setCrop(true);
+			floor.setImage("ground_e.png");
+			floor.setType("explosive");
+			grounds.add(floor);
+			objectId++;
+		}else if(obj[0].equals("gas")){
+			GameObject floor = new GameObject(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), Integer.parseInt(obj[3]), Integer.parseInt(obj[4]));
+			floor.setCrop(true);
+			floor.setImage("ground_g.png");
+			floor.setType("gas");
+			floor.setGas(true);
 			grounds.add(floor);
 			objectId++;
 		}else if(obj[0].equals("hero")){
