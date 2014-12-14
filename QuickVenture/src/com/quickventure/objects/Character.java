@@ -15,6 +15,7 @@ public class Character extends GameObject {
 	private double drawY;
 	private int drawWidth;
 	private int drawHeight;
+	private boolean invincible;
 
 	private int autoFireRate = 40; // Number of frames delayed between each shot.
 	
@@ -32,6 +33,7 @@ public class Character extends GameObject {
 		this.drawY = y;
 		this.drawWidth = w;
 		this.drawHeight = h;
+		this.invincible = false;
 	}
 	
 	public void setHealth(int h){
@@ -108,6 +110,10 @@ public class Character extends GameObject {
 		}
 	}
 	
+	public void setInvincible(boolean b){
+		this.invincible = b;
+	}
+	
 	public void resetShots(){
 		this.isShooting = false;
 		this.shootTimer = 0;
@@ -117,6 +123,10 @@ public class Character extends GameObject {
 	}
 	
 	public int takeDamage(int d){
+		if(this.invincible){
+			return this.health;
+		}
+		
 		this.health -= d;
 		if(this.health > this.MAX_HEALTH)
 			this.health = this.MAX_HEALTH;
@@ -149,7 +159,7 @@ public class Character extends GameObject {
 				return 4;
 			}else{
 				// Shouldn't be there... just fall through
-				return 0;
+				return 5;
 			}
 			
 		}else{

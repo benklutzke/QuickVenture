@@ -342,17 +342,46 @@ public class Board extends JPanel {
 					// Hero collides right side -> Smashes face; VX = 0
 					hero.setNewLocation(o.getX() - hero.getWidth(), -1);
 					hero.setVX(0);					
-				}else{
+				}else if(result == 4){
 					// Hero collides left side
 					hero.setNewLocation(o.getX() + o.getWidth(), -1);
 					hero.setVX(0);					
 				}
 			}
 		}else if(curGround != null){
+			
 			if(hero.getNX() + hero.getWidth() < curGround.getX() || hero.getNX() > curGround.getX() + curGround.getWidth()){
+				//  Check if another ground is connected to curGround
+				boolean found = false;
+				for(GameObject o : grounds){
+					if(o.equals(curGround)){
+						continue;
+					}
+					if(o.getY() == curGround.getY() && 
+					  ((hero.getNX() + hero.getWidth() < curGround.getX()) && (Math.abs(curGround.getX() - (o.getX() + o.getWidth())) <= hero.getWidth()) ||
+					  ((hero.getNX() > curGround.getX() + curGround.getWidth()) && Math.abs(curGround.getX() + curGround.getWidth() - o.getX()) <= hero.getWidth()))){
+						
+						
+//						System.out.println("Switchy: " + o.getX() + ", " + o.getWidth() + ", " + curGround.getX() + ", " + curGround.getWidth());
+//						System.out.println(Math.abs(curGround.getX() - (o.getX() + o.getWidth())) <= hero.getWidth());
+//						System.out.println(Math.abs(curGround.getX() + curGround.getWidth() - o.getX()) <= hero.getWidth());
+//						System.out.println((o.getX() <= curGround.getX() + curGround.getWidth() + hero.getWidth()));
+//						System.out.println((curGround.getX() - hero.getWidth() <= o.getX() + o.getWidth()));
+						if(curGround.getType().equals("gas")){
+							curGround.setGas(true);
+							shootEnabled = true;
+							gasTimer = 0;
+						}
+						curGround = o;
+						found = true;
+						break;
+					}
+				}
 				// Moved past end of curground -> fall
-				hero.setGrounded(false);
-				curGround = null;
+				if(!found){
+					hero.setGrounded(false);
+					curGround = null;
+				}
 			}
 		}
 		
@@ -381,6 +410,14 @@ public class Board extends JPanel {
 					gasTimer = 0;
 					curGround.setGas(false);
 				}
+			}
+		}else if(shootEnabled == false){
+			if(gasTimer < TARGET_FPS){
+				shootEnabled = false;
+				gasTimer++;
+			}else{
+				shootEnabled = true;
+				gasTimer = 0;
 			}
 		}
 		
@@ -467,11 +504,11 @@ public class Board extends JPanel {
 		if(hero.getHealth() <= 0){
 			gameRunning = false;
 			// Play Hero Death Sound
-//			try {
-//				playSound("hero_death.wav");
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
+			try {
+				playSound("hero_death.wav");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 		// Prepare next character animation
@@ -635,6 +672,24 @@ public class Board extends JPanel {
 			hero.setAY(2000);
 			hero.setHero();
 			hero.setAutoFireMode(false);
+			objectId++;
+		}else if(obj[0].equals("mushroom")){
+			Item it = new Item(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), 40, 40, "heal");
+			it.setImage("mushroom.png");
+			it.setMaxSpeed(0);			
+			items.add(it);
+			objectId++;
+		}else if(obj[0].equals("star")){
+			Item it = new Item(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), 32, 32, "star");
+			it.setImage("star.png");
+			it.setMaxSpeed(0);			
+			items.add(it);
+			objectId++;
+		}else if(obj[0].equals("creature")){
+			Character c = new Character(objectId, Integer.parseInt(obj[1]), Integer.parseInt(obj[2]), 74, 46, 20, "Mob");
+			c.setImage("troll.png");
+			c.setMaxSpeed(70);
+			creatures.add(c);
 			objectId++;
 		}
 		
